@@ -1,0 +1,115 @@
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+::-webkit-scrollbar {
+	width: 10px;
+}
+
+::-webkit-scrollbar-track {
+	background: #333;
+}
+
+::-webkit-scrollbar-thumb {
+	background: #555;
+	border-radius: 10px;
+}
+
+button {
+	background: transparent;
+	border: 0;
+	color: #fff;
+	cursor: pointer;
+}
+
+body {
+	background: #111;
+	color: #fff;
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+		Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+		sans-serif;
+	margin: 0 auto;
+	min-height: 100svh;
+	display: grid;
+	grid-template-rows: 10% 80% 10%;
+	overflow: hidden;
+	grid-template-areas:
+		"header"
+		"main"
+		"footer";
+}
+
+header {
+	grid-area: header;
+	display: flex;
+	gap: 10px;
+	align-items: center;
+	padding: 32px;
+	background: linear-gradient(90deg, #333, silver);
+}
+
+main {
+	grid-area: main;
+	padding-inline: 10%;
+	padding-block: 52px;
+	overflow: hidden;
+	overflow-y: auto;
+	display: flex;
+	justify-content: flex-start;
+	align-items: start;
+
+	& a {
+		color: #fff;
+		text-decoration: none;
+		display: block;
+		text-align: center;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		flex-direction: column;
+		width: fit-content;
+		border-radius: 10px;
+		box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+		border: 1px solid #fff;
+		transition: all 0.3s linear;
+		animation: fade-up linear both;
+		animation-timeline: view();
+		animation-range: entry 10% cover 20%;
+
+		&:hover {
+			scale: 1.05;
+		}
+	}
+
+	& img {
+		aspect-ratio: 16/9;
+		height: 200px;
+		margin-bottom: 10px;
+	}
+}
+
+footer {
+	grid-area: footer;
+	display: flex;
+	justify-content: center;
+	background: linear-gradient(90deg, #333, silver);
+	align-items: center;
+	margin-top: 32px;
+}
+
+@keyframes fade-up {
+	from {
+		opacity: 0;
+		transform: translateY(50px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@view-transition {
+	navigation: auto;
+}

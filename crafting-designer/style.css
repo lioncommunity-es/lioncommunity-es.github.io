@@ -1,0 +1,306 @@
+:root {
+	--color-s: #ff7f80;
+	--color-a: #ffc07f;
+	--color-b: #ffdf80;
+	--color-c: #fdff7f;
+	--color-d: #bfff7f;
+	--color-e: #7fff7f;
+}
+
+#goback {
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	padding-inline: 10px;
+	padding-block: 5px;
+	cursor: pointer;
+	display: block;
+	background: 333;
+	text-decoration: none;
+	color: white;
+	border: 2px solid white;
+	border-radius: 5px;
+	font-size: 1.2rem;
+	transition: all 0.3s ease;
+
+	&:hover {
+		background: white;
+		color: black;
+	}
+
+	&:active {
+		scale: 0.95;
+	}
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+::-webkit-scrollbar {
+	width: 10px;
+}
+
+::-webkit-scrollbar-track {
+	background: #333;
+}
+
+::-webkit-scrollbar-thumb {
+	background: #555;
+	border-radius: 10px;
+}
+
+button {
+	background: transparent;
+	border: 0;
+	color: #fff;
+	cursor: pointer;
+}
+
+body {
+	background: #111;
+	color: #fff;
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+		Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+		sans-serif;
+	margin: 0 auto;
+	max-width: 900px;
+	padding-inline: 32px;
+	user-select: none;
+}
+
+#top-header {
+	display: flex;
+	justify-content: center;
+	flex-direction: column;
+	align-items: center;
+	gap: 1px;
+	padding: 32px 0 16px;
+
+	& h1,
+	& h5 {
+		margin: 0;
+	}
+
+	& a {
+		color: #fff;
+		text-decoration: none;
+	}
+
+	& h5 {
+		opacity: 0.7;
+	}
+}
+
+.crafting {
+	border: 1px solid #444;
+	display: flex;
+	flex-direction: column;
+	background: #1f1f1f;
+	height: 45svh;
+	overflow: hidden;
+	overflow-y: auto;
+	overflow-x: auto;
+}
+
+.row {
+	display: flex;
+	flex-direction: row;
+	border-bottom: 1px solid #111;
+	transition: all 0.3s ease;
+	gap: 8px;
+
+	&.drag-over {
+		background: #555;
+		scale: 1.01;
+	}
+
+	& i {
+		height: 100px;
+		width: 40px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 30px;
+	}
+}
+
+.item {
+	cursor: pointer;
+	background: var(--level, rgba(0, 153, 255, 0.386));
+	color: #333;
+	font-weight: bold;
+	width: 100px !important;
+	height: 100px;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	& span:focus {
+		outline: 1px solid #fff;
+	}
+}
+
+.elements {
+	display: flex;
+	flex-direction: row;
+	min-width: calc(100% - 156px);
+	width: fit-content;
+	height: 100px;
+}
+
+#selector {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 16px;
+	margin-top: 16px;
+}
+
+#selector-buttons {
+	display: flex;
+	gap: 8px;
+	justify-content: center;
+
+	& button,
+	& label {
+		cursor: pointer;
+		transition: all 0.3s ease;
+		background: #222;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		width: 24px;
+		height: 24px;
+		padding: 4px;
+
+		&:hover {
+			background: #444;
+			scale: 1.1;
+		}
+	}
+
+	& svg {
+		width: 100%;
+		height: 100%;
+	}
+}
+
+#selector-items {
+	border: 1px solid #666;
+	position: relative;
+	width: 100%;
+	height: 300px;
+	display: flex;
+	flex-wrap: wrap;
+
+	&.drag-files {
+		background: #555;
+		border-style: dashed;
+	}
+}
+
+#selector-items::before {
+	position: absolute;
+	z-index: -20;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	content: "Click para Insertar o Arrastra Imágenes";
+	color: #646464ac;
+}
+
+.item-image {
+	width: 100px;
+	height: 100px;
+	object-fit: cover;
+	position: relative;
+	background: #fff;
+	cursor: grab;
+
+	& img {
+		pointer-events: none;
+		width: 100px;
+		height: 100px;
+		object-fit: cover;
+	}
+
+	& span {
+		background: #333333a0;
+		height: 20px;
+		width: 100%;
+		position: absolute;
+		left: 0;
+		padding: 2px;
+		font-size: small;
+		text-align: center;
+		z-index: 30;
+		bottom: 0;
+		color: #fff;
+		font-weight: normal;
+	}
+
+	&.drag-preview {
+		opacity: 0.5;
+		pointer-events: none;
+	}
+
+	&.cselected {
+		position: relative;
+		width: 100px;
+		height: 100px;
+		box-shadow: inset 0 0 10px black;
+		opacity: 0.8;
+	}
+
+	&.cselected::after {
+		position: absolute;
+		left: 0;
+		top: 0;
+		content: "";
+		width: 100%;
+		height: 100%;
+		border: 2px solid #fff;
+		background: #11111160;
+	}
+}
+
+#context-menu,
+#context-menu-delete {
+	position: absolute;
+	background-color: #444;
+	border: 1px solid #555;
+	border-radius: 4px;
+	padding: 5px 0;
+	min-width: 150px;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+	display: none;
+}
+
+#context-menu .citem,
+#context-menu-delete .citem {
+	padding: 8px 15px;
+	cursor: pointer;
+	transition: background-color 0.2s;
+}
+
+#context-menu .citem:hover,
+#context-menu-delete .citem:hover {
+	background-color: #555;
+}
+
+#context-menu .separator,
+#context-menu-delete .separator {
+	height: 1px;
+	background-color: #555;
+	margin: 5px 0;
+}
+
+@view-transition {
+	navigation: auto;
+}
