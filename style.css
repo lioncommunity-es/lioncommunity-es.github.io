@@ -61,6 +61,7 @@ main {
 	align-items: start;
 
 	& a {
+		oveflow: hidden;
 		color: #fff;
 		text-decoration: none;
 		display: block;
