@@ -655,6 +655,7 @@
 							"Introduce la cantidad",
 							item.dataset.quantity
 						);
+						if (!quantity) return;
 						item.dataset.quantity = quantity;
 						item.querySelector(
 							"span"
@@ -667,6 +668,7 @@
 							"Introduce el nombre",
 							item.dataset.name
 						);
+						if (!name) return;
 						item.dataset.name = name;
 						item.querySelector(
 							"span"
