@@ -109,7 +109,3 @@ footer {
 		transform: translateY(0);
 	}
 }
-
-@view-transition {
-	navigation: auto;
-}
