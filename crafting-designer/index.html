@@ -651,6 +651,7 @@
 
 					if (action === "changequant") {
 						const item = $(".cselected");
+						contextMenu.style.display = "none";
 						const quantity = prompt(
 							"Introduce la cantidad",
 							item.dataset.quantity
@@ -664,6 +665,7 @@
 
 					if (action === "changename") {
 						const item = $(".cselected");
+						contextMenu.style.display = "none";
 						const name = prompt(
 							"Introduce el nombre",
 							item.dataset.name
