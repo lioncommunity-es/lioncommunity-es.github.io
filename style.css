@@ -111,3 +111,9 @@ footer {
 		transform: translateY(0);
 	}
 }
+
+@media (max-width: 767px) {
+	main {
+		flex-direction: column;
+	}
+}
