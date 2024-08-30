@@ -265,6 +265,7 @@
 			const itemForm = document.getElementById("itemForm");
 			const addItemBtn = document.getElementById("addItem");
 			const saveItemBtn = document.getElementById("saveItem");
+			const removeItemBtn = document.getElementById("removeItem");
 			const cancelEditBtn = document.getElementById("cancelEdit");
 			const downloadJSONBtn = document.getElementById("downloadJSON");
 			const downloadLUABtn = document.getElementById("downloadLUA");
@@ -319,6 +320,12 @@
 
 			function saveItem() {
 				const nameInput = document.getElementById("name");
+
+				if (!nameInput.value || nameInput.value.trim() === "") {
+					alert("Name is required");
+					return;
+				}
+
 				const imageInput = document.getElementById("image");
 
 				const sanitizedName = sanitizeFileName(nameInput.value);
@@ -345,6 +352,16 @@
 				currentEditingItem = null;
 			}
 
+			function removeItem() {
+				if (currentEditingItem) {
+					delete items[currentEditingItem];
+					renderItems();
+					saveLocally(items);
+					itemForm.style.display = "none";
+					currentEditingItem = null;
+				}
+			}
+
 			addItemBtn.addEventListener("click", () => {
 				currentEditingItem = null;
 				document.getElementById("name").value = "";
@@ -360,6 +377,7 @@
 			});
 
 			saveItemBtn.addEventListener("click", saveItem);
+			removeItemBtn.addEventListener("click", removeItem);
 
 			cancelEditBtn.addEventListener("click", () => {
 				itemForm.style.display = "none";
@@ -588,6 +606,7 @@
 					<textarea id="description" rows="3" required></textarea>
 				</div>
 				<button id="saveItem">Save Item</button>
+				<button id="removeItem">Remove</button>
 				<button id="cancelEdit">Cancel</button>
 			</div>
 		</main>
