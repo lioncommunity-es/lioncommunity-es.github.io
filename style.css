@@ -59,9 +59,10 @@ main {
 	display: flex;
 	justify-content: flex-start;
 	align-items: start;
+	gap: 70px;
 
 	& a {
-		oveflow: hidden;
+		overflow: hidden;
 		color: #fff;
 		text-decoration: none;
 		display: block;
