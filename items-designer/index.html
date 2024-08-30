@@ -275,6 +275,18 @@
 			const uploadLUATextBtn =
 				document.getElementById("uploadLUAtextBtn");
 
+			const saveItemsLocally = (items) => {
+				localStorage.setItem("items", JSON.stringify(items));
+			};
+
+			document.addEventListener("DOMContentLoaded", () => {
+				const localItems = localStorage.getItem("items");
+				if (localItems) {
+					items = JSON.parse(localItems);
+					renderItems();
+				}
+			});
+
 			function renderItems() {
 				itemList.innerHTML = "";
 				for (const [key, item] of Object.entries(items)) {
@@ -329,6 +341,7 @@
 				};
 				items[sanitizedName] = item;
 				renderItems();
+				saveLocally(items);
 				itemForm.style.display = "none";
 				currentEditingItem = null;
 			}
@@ -395,6 +408,7 @@
 						try {
 							items = JSON.parse(e.target.result);
 							renderItems();
+							saveLocally(items);
 						} catch (error) {
 							alert("Error parsing JSON file");
 						}
@@ -434,6 +448,7 @@
 					reader.onload = function (e) {
 						items = luaParser(e.target.result);
 						renderItems();
+						saveLocally(items);
 					};
 					reader.readAsText(file);
 				}
@@ -444,6 +459,7 @@
 				if (luaContent) {
 					items = luaParser(luaContent);
 					renderItems();
+					saveLocally(items);
 				}
 			});
 
