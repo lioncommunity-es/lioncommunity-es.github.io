@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+			integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
+			crossorigin="anonymous"
+			referrerpolicy="no-referrer" />
+		<style>
+			*,
+			*::before,
+			*::after {
+				box-sizing: border-box;
+				margin: 0;
+				padding: 0;
+			}
+
+			:root {
+				--bg-color: #1a1a1a;
+				--text-color: #ffffff;
+				--primary-color: #3a3a3a;
+				--secondary-color: #2a2a2a;
+				--accent-color: #4a4a4a;
+				--hover-color: #5a5a5a;
+			}
+
+			body {
+				font-family: system-ui, -apple-system, BlinkMacSystemFont,
+					"Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
+					"Helvetica Neue", sans-serif;
+				background-color: #5c5c5c;
+				color: var(--text-color);
+				min-height: 100svh;
+				display: grid;
+				grid-template-rows: 10% 90%;
+				overflow: hidden;
+				grid-template-areas:
+					"header"
+					"main";
+			}
+
+			header {
+				grid-area: "header";
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				padding: 1rem;
+				background-color: #333;
+				color: #fff;
+
+				& h1 {
+					font-size: 1.5rem;
+				}
+
+				& nav {
+					display: flex;
+					gap: 1rem;
+
+					& a,
+					& button {
+						display: flex;
+						outline: none;
+						border: none;
+						gap: 0.5rem;
+						padding: 0.5rem 1rem;
+						border-radius: 0.25rem;
+						align-items: center;
+						background-color: #555;
+						color: #fff;
+						text-decoration: none;
+						transition: background-color 0.3s linear,
+							scale 0.3s linear;
+
+						& i {
+							font-size: 1.25rem;
+						}
+
+						& svg {
+							height: 1.25rem;
+							width: 1.25rem;
+						}
+
+						&:hover {
+							background-color: #777;
+						}
+
+						&:active {
+							background-color: #999;
+							scale: 0.95;
+						}
+					}
+				}
+			}
+			h1 {
+				margin: 0;
+			}
+
+			main {
+				grid-area: "main";
+				display: flex;
+				flex: 1;
+			}
+
+			aside {
+				width: 300px;
+				background-color: var(--secondary-color);
+				padding: 1rem;
+				display: flex;
+				flex-direction: column;
+			}
+
+			#itemList {
+				flex: 1;
+				overflow-y: auto;
+				margin-top: 1rem;
+			}
+
+			.item {
+				background-color: var(--primary-color);
+				padding: 0.5rem;
+				margin-bottom: 0.5rem;
+				border-radius: 4px;
+				cursor: pointer;
+				transition: background-color 0.3s ease;
+			}
+
+			.item:hover {
+				background-color: var(--hover-color);
+			}
+
+			#itemForm {
+				flex: 1;
+
+				padding: 1rem;
+			}
+			.form-group {
+				margin-bottom: 1rem;
+			}
+
+			label {
+				display: block;
+				margin-bottom: 0.5rem;
+			}
+
+			input[type="text"],
+			input[type="number"],
+			textarea {
+				width: 100%;
+				padding: 0.5rem;
+				background-color: var(--primary-color);
+				border: 1px solid var(--accent-color);
+				color: var(--text-color);
+				border-radius: 4px;
+			}
+
+			.checkbox-group {
+				display: flex;
+				align-items: center;
+			}
+
+			.checkbox-group input[type="checkbox"] {
+				margin-right: 0.5rem;
+			}
+
+			button {
+				background-color: var(--accent-color);
+				color: var(--text-color);
+				border: none;
+				padding: 0.5rem 1rem;
+				cursor: pointer;
+				border-radius: 4px;
+				transition: background-color 0.3s ease;
+			}
+
+			button:hover {
+				background-color: var(--hover-color);
+			}
+
+			#uploadJSON {
+				display: none;
+			}
+		</style>
+		<script type="module">
+			let items = {};
+			let currentEditingItem = null;
+
+			const itemList = document.getElementById("itemList");
+			const itemForm = document.getElementById("itemForm");
+			const addItemBtn = document.getElementById("addItem");
+			const saveItemBtn = document.getElementById("saveItem");
+			const cancelEditBtn = document.getElementById("cancelEdit");
+			const downloadJSONBtn = document.getElementById("downloadJSON");
+			const downloadLUABtn = document.getElementById("downloadLUA");
+			const uploadJSONBtn = document.getElementById("uploadJSONBtn");
+			const uploadJSONInput = document.getElementById("uploadJSON");
+			const uploadLUABtn = document.getElementById("uploadLUABtn");
+			const uploadLUAInput = document.getElementById("uploadLUA");
+			const uploadLUATextBtn =
+				document.getElementById("uploadLUAtextBtn");
+
+			function renderItems() {
+				itemList.innerHTML = "";
+				for (const [key, item] of Object.entries(items)) {
+					const itemElement = document.createElement("div");
+					itemElement.classList.add("item");
+					itemElement.textContent = item.label || item.name || key;
+					itemElement.addEventListener("click", () => editItem(key));
+					itemList.appendChild(itemElement);
+				}
+			}
+
+			function editItem(key) {
+				currentEditingItem = key;
+				const item = items[key];
+				document.getElementById("name").value = item.name;
+				document.getElementById("label").value = item.label;
+				document.getElementById("weight").value = item.weight;
+				document.getElementById("type").value = item.type;
+				document.getElementById("image").value = item.image;
+				document.getElementById("unique").checked = item.unique;
+				document.getElementById("useable").checked = item.useable;
+				document.getElementById("shouldClose").checked =
+					item.shouldClose;
+				document.getElementById("description").value = item.description;
+				itemForm.style.display = "block";
+			}
+
+			function sanitizeFileName(name) {
+				return name.toLowerCase().replace(/[^a-z0-9_]/g, "_");
+			}
+
+			function saveItem() {
+				const nameInput = document.getElementById("name");
+				const imageInput = document.getElementById("image");
+
+				const sanitizedName = sanitizeFileName(nameInput.value);
+				const sanitizedImage = sanitizeFileName(imageInput.value);
+
+				nameInput.value = sanitizedName;
+				imageInput.value = sanitizedImage;
+
+				const item = {
+					name: sanitizedName,
+					label: document.getElementById("label").value,
+					weight: parseFloat(document.getElementById("weight").value),
+					type: document.getElementById("type").value,
+					image: sanitizedImage,
+					unique: document.getElementById("unique").checked,
+					useable: document.getElementById("useable").checked,
+					shouldClose: document.getElementById("shouldClose").checked,
+					description: document.getElementById("description").value,
+				};
+				items[sanitizedName] = item;
+				renderItems();
+				itemForm.style.display = "none";
+				currentEditingItem = null;
+			}
+
+			addItemBtn.addEventListener("click", () => {
+				currentEditingItem = null;
+				document.getElementById("name").value = "";
+				document.getElementById("label").value = "";
+				document.getElementById("weight").value = "";
+				document.getElementById("type").value = "item";
+				document.getElementById("image").value = "";
+				document.getElementById("unique").checked = false;
+				document.getElementById("useable").checked = false;
+				document.getElementById("shouldClose").checked = false;
+				document.getElementById("description").value = "";
+				itemForm.style.display = "block";
+			});
+
+			saveItemBtn.addEventListener("click", saveItem);
+
+			cancelEditBtn.addEventListener("click", () => {
+				itemForm.style.display = "none";
+				currentEditingItem = null;
+			});
+
+			downloadJSONBtn.addEventListener("click", () => {
+				const dataStr =
+					"data:text/json;charset=utf-8," +
+					encodeURIComponent(JSON.stringify(items, null, 2));
+				const downloadAnchorNode = document.createElement("a");
+				downloadAnchorNode.setAttribute("href", dataStr);
+				downloadAnchorNode.setAttribute("download", "items.json");
+				document.body.appendChild(downloadAnchorNode);
+				downloadAnchorNode.click();
+				downloadAnchorNode.remove();
+			});
+
+			downloadLUABtn.addEventListener("click", () => {
+				let luaContent = "";
+				for (const [key, item] of Object.entries(items)) {
+					luaContent += `${key} = { name = "${item.name}", label = "${item.label}", weight = ${item.weight}, type = "${item.type}", image = "${item.image}", unique = ${item.unique}, useable = ${item.useable}, shouldClose = ${item.shouldClose}, description = "${item.description}" }\n`;
+				}
+
+				const dataStr =
+					"data:text/plain;charset=utf-8," +
+					encodeURIComponent(luaContent);
+				const downloadAnchorNode = document.createElement("a");
+				downloadAnchorNode.setAttribute("href", dataStr);
+				downloadAnchorNode.setAttribute("download", "items.lua");
+				document.body.appendChild(downloadAnchorNode);
+				downloadAnchorNode.click();
+				downloadAnchorNode.remove();
+			});
+
+			uploadJSONBtn.addEventListener("click", () => {
+				uploadJSONInput.click();
+			});
+
+			uploadJSONInput.addEventListener("change", (event) => {
+				const file = event.target.files[0];
+				if (file) {
+					const reader = new FileReader();
+					reader.onload = function (e) {
+						try {
+							items = JSON.parse(e.target.result);
+							renderItems();
+						} catch (error) {
+							alert("Error parsing JSON file");
+						}
+					};
+					reader.readAsText(file);
+				}
+			});
+
+			uploadLUABtn.addEventListener("click", () => {
+				uploadLUAInput.click();
+			});
+
+			const luaParser = (luaContent) => {
+				let result = {};
+				try {
+					luaContent.split("\n").forEach((line) => {
+						if (line.trim().startsWith("--")) return;
+						const itemString = line
+							.replace(/^\s*\w+\s*=\s*/, "")
+							.trim()
+							.replaceAll(" = ", ": ");
+						if (itemString === "") return; // Skip empty lines
+						const itemObject = eval(`(${itemString})`);
+						result[itemObject.name] = itemObject;
+					});
+				} catch (error) {
+					console.error("Error parsing LUA file:", error);
+					alert("Error parsing LUA file: " + error.message);
+				}
+				return result;
+			};
+
+			uploadLUAInput.addEventListener("change", (event) => {
+				const file = event.target.files[0];
+				if (file) {
+					const reader = new FileReader();
+					reader.onload = function (e) {
+						items = luaParser(e.target.result);
+						renderItems();
+					};
+					reader.readAsText(file);
+				}
+			});
+
+			uploadLUATextBtn.addEventListener("click", () => {
+				const luaContent = prompt("Paste LUA content here:");
+				if (luaContent) {
+					items = luaParser(luaContent);
+					renderItems();
+				}
+			});
+
+			renderItems();
+		</script>
+		<link
+			rel="icon"
+			type="image/png"
+			href="https://cdn.discordapp.com/icons/932991184694022154/accd2a7d51cbe333bb6ceb2d1a10030a.png?size=4096" />
+		<title>Items Creator Tool - Dev Tools LionRP</title>
+	</head>
+	<body>
+		<header>
+			<h1>Items Designer Tool</h1>
+			<nav>
+				<a href="/">
+					<i class="fa-solid fas fa-backward"></i>
+					<span>Atrás</span>
+				</a>
+				<button id="uploadJSONBtn">
+					<i class="fa-solid fa-key"></i>
+					<span>Load JSON</span>
+					<input type="file" id="uploadJSON" accept=".json" hidden />
+				</button>
+				<button id="downloadJSON">
+					<i class="fa-solid fa-download"></i>
+					<span>Download JSON</span>
+				</button>
+				<button id="uploadLUABtn">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						xml:space="preserve"
+						width="947"
+						height="947"
+						version="1.0"
+						viewBox="0 0 947 947">
+						<path
+							fill="currentColor"
+							d="M836 474a362 362 0 1 0-725 0 362 362 0 0 0 725 0" />
+						<path
+							fill="#000"
+							d="M730 324a106 106 0 1 0-213 0 106 106 0 0 0 213 0" />
+						<path
+							fill="currentColor"
+							d="M942 112a106 106 0 1 0-213 0 106 106 0 0 0 213 0" />
+						<path
+							fill="#000"
+							d="M258 628h117v26H228V418h30v211zm258 27v-24c-16 22-32 31-57 31-34 0-55-18-55-47V484h27v121c0 20 14 33 35 33 29 0 47-22 47-57v-97h27v171h-24zm222 4-18 3c-18 0-26-8-28-25a81 81 0 0 1-58 25c-35 0-56-19-56-50 0-23 10-38 30-46 10-4 16-6 54-11 22-2 29-7 29-18v-8c0-16-14-25-38-25-26 0-38 9-40 30h-28c1-17 4-26 12-35 11-13 32-20 57-20 42 0 64 16 64 46v101c0 8 5 13 15 13h5v20zm-47-89c-9 4-15 6-44 10s-41 13-41 31c0 17 12 27 34 27 16 0 29-5 40-15 8-8 11-13 11-22v-31z" />
+						<path
+							fill="none"
+							stroke="currentColor"
+							stroke-dasharray="41"
+							stroke-miterlimit="10"
+							stroke-width="10.9"
+							d="M891 261A468 468 0 1 1 710 69" />
+					</svg>
+					<span>Load LUA</span>
+					<input type="file" id="uploadLUA" accept=".lua" hidden />
+				</button>
+				<button id="downloadLUA">
+					<i class="fa-solid fa-save"></i>
+					<span>Download LUA</span>
+				</button>
+				<button id="uploadLUAtextBtn">
+					<i class="fa-solid fa-pen-nib"></i>
+					<span>Download JSON</span>
+				</button>
+			</nav>
+		</header>
+		<main>
+			<aside>
+				<button id="addItem">
+					<i class="fa-solid fa-plus"></i>
+					<span>Add Item</span>
+				</button>
+				<div id="itemList"></div>
+			</aside>
+			<div id="itemForm" style="display: none">
+				<h2>Edit Item</h2>
+				<div class="form-group">
+					<label for="name">Name:</label>
+					<input type="text" id="name" required />
+				</div>
+				<div class="form-group">
+					<label for="label">Label:</label>
+					<input type="text" id="label" required />
+				</div>
+				<div class="form-group">
+					<label for="weight">Weight:</label>
+					<input type="number" id="weight" required />
+				</div>
+				<div class="form-group">
+					<label for="type">Type:</label>
+					<input type="text" id="type" required />
+				</div>
+				<div class="form-group">
+					<label for="image">Image:</label>
+					<input type="text" id="image" required />
+				</div>
+				<div class="form-group">
+					<div class="checkbox-group">
+						<input type="checkbox" id="unique" />
+						<label for="unique">Unique</label>
+					</div>
+					<div class="checkbox-group">
+						<input type="checkbox" id="useable" />
+						<label for="useable">Useable</label>
+					</div>
+					<div class="checkbox-group">
+						<input type="checkbox" id="shouldClose" />
+						<label for="shouldClose">Should Close</label>
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="description">Description:</label>
+					<textarea id="description" rows="3" required></textarea>
+				</div>
+				<button id="saveItem">Save Item</button>
+				<button id="cancelEdit">Cancel</button>
+			</div>
+		</main>
+	</body>
+</html>
