@@ -345,14 +345,16 @@
 
 				const item = {
 					name: sanitizedName,
-					label: document.getElementById("label").value,
+					label: document.getElementById("label").value.trim(),
 					weight: parseFloat(document.getElementById("weight").value),
-					type: document.getElementById("type").value,
+					type: document.getElementById("type").value.trim(),
 					image: sanitizedImage,
 					unique: document.getElementById("unique").checked,
 					useable: document.getElementById("useable").checked,
 					shouldClose: document.getElementById("shouldClose").checked,
-					description: document.getElementById("description").value,
+					description: document
+						.getElementById("description")
+						.value.trim(),
 				};
 				items[sanitizedName] = item;
 				renderItems();
@@ -416,7 +418,13 @@
 			downloadLUABtn.addEventListener("click", () => {
 				let luaContent = "";
 				for (const [key, item] of Object.entries(items)) {
-					luaContent += `${key} = { name = "${item.name}", label = "${item.label}", weight = ${item.weight}, type = "${item.type}", image = "${item.image}", unique = ${item.unique}, useable = ${item.useable}, shouldClose = ${item.shouldClose}, description = "${item.description}" }\n`;
+					luaContent += `${key} = { name = "${item.name}", label = "${item.label}", weight = ${item.weight}, type = "${item.type}", image = "${item.image}", unique = ${item.unique}, useable = ${item.useable}, shouldClose = ${item.shouldClose}, description = "${item.description}" }`;
+					if (
+						key !==
+						Object.keys(items)[Object.keys(items).length - 1]
+					) {
+						luaContent += ",\n";
+					}
 				}
 
 				const dataStr =
@@ -464,7 +472,8 @@
 						const itemString = line
 							.replace(/^\s*\w+\s*=\s*/, "")
 							.trim()
-							.replaceAll(" = ", ": ");
+							.replaceAll(" = ", ": ")
+							.replaceAll("},", "}");
 						if (itemString === "") return; // Skip empty lines
 						const itemObject = eval(`(${itemString})`);
 						result[itemObject.name] = itemObject;
