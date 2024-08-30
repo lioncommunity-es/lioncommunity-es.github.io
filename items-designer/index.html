@@ -314,6 +314,15 @@
 				itemForm.style.display = "block";
 			}
 
+			document
+				.getElementById("name")
+				.addEventListener("input", (event) => {
+					const nameInput = event.target;
+					const imageInput = document.getElementById("image");
+					imageInput.value =
+						sanitizeFileName(nameInput.value) + ".png";
+				});
+
 			function sanitizeFileName(name) {
 				return name.toLowerCase().replace(/[^a-z0-9_.]/g, "_");
 			}
