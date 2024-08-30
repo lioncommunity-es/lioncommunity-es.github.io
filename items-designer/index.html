@@ -275,7 +275,7 @@
 			const uploadLUATextBtn =
 				document.getElementById("uploadLUAtextBtn");
 
-			const saveItemsLocally = (items) => {
+			const saveLocally = (items) => {
 				localStorage.setItem("items", JSON.stringify(items));
 			};
 
@@ -410,6 +410,7 @@
 							renderItems();
 							saveLocally(items);
 						} catch (error) {
+							console.error("Error parsing JSON file:", error);
 							alert("Error parsing JSON file");
 						}
 					};
