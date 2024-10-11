@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+			integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
+			crossorigin="anonymous"
+			referrerpolicy="no-referrer" />
+
+		<link rel="stylesheet" href="/discord-embed/style.css" />
+		<style></style>
+		<script type="module" src="/discord-embed/script.js"></script>
+		<link
+			rel="icon"
+			type="image/png"
+			href="https://cdn.discordapp.com/icons/932991184694022154/accd2a7d51cbe333bb6ceb2d1a10030a.png?size=4096" />
+		<title>Discord Embed Tool - Dev Tools LionRP</title>
+	</head>
+	<body>
+		<main>
+			<aside>
+				<ul>
+					<li
+						class="active"
+						id="open-editor"
+						onclick="changeScreen('editor')">
+						<i class="fa-solid fa-pen-to-square"></i>
+						<span>Editor de Mensaje</span>
+					</li>
+					<li id="open-saved" onclick="changeScreen('saved')">
+						<i class="fa-solid fa-floppy-disk"></i>
+						<span>Mensajes Guardados</span>
+					</li>
+				</ul>
+			</aside>
+			<section id="editor">
+				<header>
+					<div>
+						<button id="undo">
+							<i class="fa-solid fa-reply"></i>
+						</button>
+						<button id="redo">
+							<i class="fa-solid fa-share"></i>
+						</button>
+					</div>
+					<div>
+						<div id="embed-type">
+							<span
+								id="bot"
+								onclick="changeType('bot')"
+								selected="true"
+								>Mensaje de Bot</span
+							>
+							<span id="webhook" onclick="changeType('webhook')"
+								>Mensaje de Webhook</span
+							>
+						</div>
+					</div>
+					<div>
+						<button id="json">
+							<i class="fa-solid fa-code"></i>
+						</button>
+						<button id="reset">
+							<i class="fa-solid fa-trash-can"></i>
+						</button>
+					</div>
+				</header>
+				<div class="main">
+					<h1>Editor de Mensaje</h1>
+					<div class="field-group" id="send">
+						<div class="agrupation">
+							<label for="webhook-url">URL Webhook</label>
+							<input name="webhook-url" type="text" />
+						</div>
+					</div>
+					<div class="field-group" id="user">
+						<div class="agrupation">
+							<label for="user">Usuario <span>0/80</span></label>
+							<input name="user" maxlength="80" type="text" />
+						</div>
+						<div class="agrupation">
+							<label for="avatar">URL Avatar</label>
+							<input name="avatar" type="text" />
+						</div>
+					</div>
+					<div class="field-group" id="content">
+						<div class="agrupation">
+							<div class="toolbar">
+								<button><strong>B</strong></button>
+								<button><em>I</em></button>
+								<button><u>U</u></button>
+								<button><del>S</del></button>
+								<button>
+									<i class="fa-regular fa-face-smile"></i>
+								</button>
+							</div>
+							<label for="content"
+								>Contenido <span>0/2000</span></label
+							>
+							<textarea
+								maxlength="2000"
+								name="content"
+								type="text"></textarea>
+						</div>
+					</div>
+					<div class="field-group" id="embeds">
+						<details>
+							<summary>Embeds</summary>
+							<div class="content"></div>
+							<div class="buttons">
+								<button class="add" id="add-embed">
+									Añadir Embed
+								</button>
+								<button class="remove" id="remove-embeds">
+									Eliminar Todos
+								</button>
+							</div>
+						</details>
+					</div>
+					<div class="field-group" id="components">
+						<details>
+							<summary>Componentes <span>0/5</span></summary>
+							<div class="content"></div>
+							<div class="buttons">
+								<button class="add" id="add-row">
+									Añadir Fila
+								</button>
+								<button class="remove" id="remove-rows">
+									Eliminar Todos
+								</button>
+							</div>
+						</details>
+					</div>
+				</div>
+			</section>
+			<section id="preview"></section>
+			<section id="msg-selector"></section>
+		</main>
+		<footer>This webpage is part of the Dev Team of LionRP</footer>
+
+		<!-- TEMPLATES !-->
+
+		<template id="row">
+			<details open>
+				<summary>Fila 1 <span>0/5</span></summary>
+				<div class="content"></div>
+				<div class="buttons">
+					<button class="add" id="add-button">Añadir Botón</button>
+					<button class="remove" id="remove-buttons">
+						Eliminar Todos
+					</button>
+				</div>
+			</details>
+		</template>
+
+		<template id="button">
+			<details open>
+				<summary>Botón 1</summary>
+				<div class="field-group embed" id="components">
+					<div class="agrupation">
+						<label for="type">Tipo</label>
+						<select name="type">
+							<option value="">Azul</option>
+							<option value="">Gris</option>
+							<option value="">Verde</option>
+							<option value="">Rojo</option>
+							<option value="">Enlace</option>
+						</select>
+					</div>
+					<div
+						style="
+							width: 100%;
+							opacity: 0;
+							height: 5px;
+							margin-bottom: -50px;
+							margin-top: -10px;
+						"></div>
+					<div class="agrupation" style="max-width: 50px; flex: 0">
+						<label for="emoji">Emoji</label>
+						<input name="emoji" type="text" />
+					</div>
+					<div class="agrupation">
+						<label for="b-text">Texto <span>0/80</span></label>
+						<input name="b-text" maxlength="80" type="text" />
+					</div>
+					<div class="agrupation" id="link">
+						<label for="b-text">Enlace</label>
+						<input name="b-text" type="url" />
+					</div>
+				</div>
+			</details>
+		</template>
+
+		<template id="embed">
+			<details open>
+				<summary>Embed</summary>
+				<details>
+					<summary>Autor</summary>
+
+					<div class="field-group embed" id="components">
+						<div class="agrupation">
+							<label for="author-name"
+								>Autor <span>0/256</span></label
+							>
+							<input
+								name="author-name"
+								maxlength="256"
+								type="text" />
+						</div>
+						<div class="agrupation">
+							<label for="author-url">URL Autor</label>
+							<input name="author-url" type="text" />
+						</div>
+						<div class="agrupation">
+							<label for="author-icon">URL Icono Autor</label>
+							<input name="author-icon" type="text" />
+						</div>
+					</div>
+				</details>
+				<details>
+					<summary>Cuerpo</summary>
+
+					<div class="field-group embed" id="components">
+						<div class="agrupation">
+							<label for="etitle"
+								>Título <span>0/256</span></label
+							>
+							<input name="etitle" maxlength="256" type="text" />
+						</div>
+						<div
+							style="
+								width: 100%;
+								opacity: 0;
+								height: 5px;
+								margin-bottom: -50px;
+								margin-top: -10px;
+							"></div>
+						<div class="agrupation">
+							<div class="toolbar">
+								<button>
+									<strong>B</strong>
+								</button>
+								<button><em>I</em></button>
+								<button><u>U</u></button>
+								<button><del>S</del></button>
+								<button>
+									<i class="fa-regular fa-face-smile"></i>
+								</button>
+							</div>
+							<label for="edescription"
+								>Descripción <span>0/4096</span></label
+							>
+							<textarea
+								maxlength="4096"
+								name="edescription"
+								type="text"></textarea>
+						</div>
+						<div
+							style="
+								width: 100%;
+								opacity: 0;
+								height: 5px;
+								margin-bottom: -5px;
+								margin-top: -5px;
+							"></div>
+						<div class="agrupation">
+							<label for="url">URL</label>
+							<input name="url" type="text" />
+						</div>
+						<div class="agrupation">
+							<label for="color">Color</label>
+							<div
+								style="
+									display: flex;
+									align-content: center;
+									gap: 5px;
+								">
+								<span
+									style="
+										flex: 1;
+										background: #050505;
+										border-radius: 5px;
+										padding-left: 5px;
+									"
+									>#
+									<input
+										style="
+											width: calc(100% - 13.85px);
+											border-top-left-radius: 0;
+											border-bottom-left-radius: 0;
+										"
+										name="color"
+										type="text"
+								/></span>
+								<div
+									onclick="this.parentElement.querySelector('input[type=\'color\']').click();"
+									id="color-picker"></div>
+								<input name="color-picker" type="color" />
+							</div>
+						</div>
+					</div>
+				</details>
+				<details>
+					<summary>Imágenes</summary>
+
+					<div class="field-group embed" id="components">
+						<div class="agrupation">
+							<label for="image-url">URL Imagen</label>
+							<input name="image-url" type="text" />
+						</div>
+						<div class="agrupation">
+							<label for="image-url">URL Imagen Miniatura</label>
+							<input name="image-url" type="text" />
+						</div>
+					</div>
+				</details>
+				<details>
+					<summary>Footer</summary>
+
+					<div class="field-group embed" id="components">
+						<div class="agrupation">
+							<label for="footer-text">Texto</label>
+							<input name="footer-text" type="text" />
+						</div>
+						<div class="agrupation">
+							<label for="footer-image-url">URL Imagen</label>
+							<input name="footer-image-url" type="text" />
+						</div>
+						<div class="agrupation">
+							<label for="footer-timestamp"
+								>Fecha Estampada</label
+							>
+							<input name="footer-timestamp" type="date" />
+						</div>
+						<div class="agrupation">
+							<label for="footer-timestamp">Hora Estampada</label>
+							<input name="footer-timestamp" type="time" />
+						</div>
+					</div>
+				</details>
+			</details>
+		</template>
+	</body>
+</html>

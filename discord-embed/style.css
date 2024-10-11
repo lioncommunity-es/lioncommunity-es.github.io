@@ -1,0 +1,365 @@
+*,
+*::before,
+*::after {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+::-webkit-scrollbar {
+	width: 5px;
+}
+
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	background: #505050;
+	border-radius: 5px;
+}
+
+body {
+	background: #050505;
+	height: 100svh;
+	color: #f1f1f1;
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+		Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+		sans-serif;
+}
+
+main {
+	display: grid;
+	grid-template-areas: "aside middle right";
+	grid-template-columns: 0.5fr 2fr 1.5fr;
+	gap: 1rem;
+	height: 97%;
+	overflow: hidden;
+	padding: 1rem;
+}
+
+footer {
+	display: flex;
+	height: 2%;
+	width: 100%;
+	text-align: center;
+	justify-content: center;
+	align-items: center;
+}
+
+aside {
+	grid-area: aside;
+	background: #1f1f1f;
+	border-radius: 10px;
+	height: 100%;
+	padding: 1rem;
+}
+
+aside ul {
+	list-style: none;
+}
+
+aside ul li {
+	border-left: 3px solid transparent;
+	color: #a9a9a9;
+	padding: 0.5rem;
+	border-radius: 2px;
+	margin-block: 1rem;
+	cursor: pointer;
+	transition: all 0.3s linear;
+}
+
+aside ul li i {
+	margin-right: 0.5px;
+}
+
+aside ul li:hover {
+	color: white;
+}
+
+aside ul li.active {
+	border-left: 3px solid white;
+	color: #f0f0f0;
+	pointer-events: none;
+}
+
+section {
+	background: #1f1f1f;
+	border-radius: 10px;
+	padding: 1rem;
+	height: 100%;
+	overflow: hidden;
+}
+
+#editor {
+	grid-area: middle;
+}
+
+#preview {
+	grid-area: right;
+	overflow: hidden;
+	overflow-y: auto;
+}
+
+#msg-selector {
+	grid-area: middle/right;
+}
+
+#editor header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	height: 10%;
+	margin-bottom: 1rem;
+	padding-inline: 0.5rem;
+	padding-bottom: 15px;
+	border-bottom: 3px solid #303030;
+}
+
+#editor header button {
+	background: #303030;
+	color: white;
+	border: none;
+	border-radius: 50%;
+	padding: 0.75rem 0.75rem;
+	cursor: pointer;
+	margin-inline: 2.5px;
+	transition: all 0.3s linear;
+}
+
+#editor header button:hover {
+	background: #404040;
+}
+
+#editor header button:active {
+	transform: scale(0.9);
+}
+
+#editor header #embed-type {
+	background: #303030;
+	color: white;
+	border: none;
+	border-radius: 7px;
+	padding-block: 0.85rem;
+	padding-inline: 0.2rem;
+	border: none;
+	user-select: none;
+	transition: all 0.3s linear;
+	cursor: pointer;
+}
+
+#editor header #embed-type span {
+	background: transparent;
+	color: #a9a9a9;
+	border-radius: 5px;
+	padding: 10px;
+	cursor: pointer;
+	transition: all 0.3s linear;
+}
+
+#editor header #embed-type span:hover {
+	background: #353535;
+	color: #b9b9b9;
+}
+
+#editor header #embed-type span[selected="true"] {
+	background: #1f1f1f;
+	pointer-events: none;
+	color: white;
+}
+
+#editor header select:hover {
+	background: #404040;
+}
+
+#editor header select option[selected] {
+	color: #757575;
+}
+
+#editor .main {
+	overflow: hidden;
+	overflow-y: auto;
+	height: 86%;
+}
+
+#editor h1 {
+	font-size: 1.5rem;
+	margin-bottom: 2rem;
+}
+
+#editor .field-group {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem;
+	width: 100%;
+	padding-right: 0.3rem;
+	align-content: center;
+	padding-bottom: 1rem;
+	margin-bottom: 1rem;
+	border-bottom: 3px solid #30303050;
+}
+
+#editor .field-group div.agrupation {
+	position: relative;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	min-width: 40%;
+}
+
+#editor .field-group div .toolbar {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-end;
+	align-content: center;
+	margin-bottom: -25px;
+}
+
+#editor .field-group div .toolbar button {
+	background: #303030;
+	color: white;
+	border: none;
+	width: 35px;
+	height: 35px;
+	border-radius: 50%;
+	cursor: pointer;
+	margin-inline: 2.5px;
+	transition: all 0.3s linear;
+}
+
+#editor .field-group div .toolbar button:hover {
+	background: #404040;
+}
+
+#editor .field-group div .toolbar button:active {
+	transform: scale(0.9);
+}
+
+#editor .field-group div label {
+	font-size: 0.9rem;
+	color: #b5b5b5;
+	text-transform: uppercase;
+}
+
+#editor .field-group div label span {
+	color: #757575;
+}
+
+#editor details summary span {
+	color: #757575;
+	margin-left: 5px;
+}
+
+#editor .field-group div input,
+#editor .field-group div select,
+#editor .field-group div textarea {
+	background: #303030;
+	color: white;
+	border: none;
+	border-radius: 5px;
+	padding: 0.5rem;
+}
+
+#editor .field-group div.agrupation input[type="color"] {
+	position: absolute;
+	right: 0;
+	opacity: 0;
+	block-size: 2.5rem;
+	inline-size: 2.5rem;
+	padding: 0;
+	background: transparent;
+	border-radius: 5px;
+	border: none;
+	color-scheme: dark;
+}
+
+#editor .field-group div.agrupation input[type="date"],
+#editor .field-group div.agrupation input[type="time"] {
+	color-scheme: dark;
+}
+
+div#color-picker {
+	width: 1.9rem;
+	height: 1.9rem;
+	background: black;
+	border-radius: 5px;
+}
+
+#editor .field-group div.agrupation:has(textarea) {
+	width: 100%;
+	margin-top: 20px;
+}
+
+#editor .field-group div.agrupation textarea {
+	resize: vertical;
+	min-height: 150px;
+	max-height: 300px;
+}
+
+#editor .field-group div input:focus,
+#editor .field-group div select:focus,
+#editor .field-group div textarea:focus {
+	outline: none;
+}
+
+#editor .field-group details {
+	background: #222;
+	width: 100%;
+	border-radius: 5px;
+	padding: 0.5rem;
+	margin-top: 1rem;
+}
+
+#editor .field-group details summary {
+	user-select: none;
+}
+
+#editor .field-group details .content {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	gap: 0.5rem;
+	margin-left: 10px;
+}
+
+#editor .field-group details div.field-group {
+	margin-top: 20px;
+}
+
+.buttons {
+	display: flex;
+	gap: 1rem;
+	padding: 1rem;
+}
+
+button.add,
+button.remove {
+	background: #303030;
+	flex: 1;
+	color: white;
+	border: none;
+	border-radius: 5px;
+	padding: 0.5rem;
+	outline: none;
+	cursor: pointer;
+	transition: all 0.3s linear;
+}
+
+button.remove {
+	background: #962020;
+}
+
+button.add:hover,
+button.remove:hover {
+	background: #404040;
+}
+
+button.remove:hover {
+	background: #cd3b3b;
+}
+
+button.add:active,
+button.remove:active {
+	transform: scale(0.9);
+}
