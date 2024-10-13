@@ -9,10 +9,8 @@
 			integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
 			crossorigin="anonymous"
 			referrerpolicy="no-referrer" />
-
-		<link rel="stylesheet" href="/discord-embed/style.css" />
-		<style></style>
-		<script type="module" src="/discord-embed/script.js"></script>
+		<link rel="stylesheet" href="style.css" />
+		<script src="script.js" defer></script>
 		<link
 			rel="icon"
 			type="image/png"
@@ -26,7 +24,7 @@
 					<li
 						class="active"
 						id="open-editor"
-						onclick="changeScreen('editor')">
+						onclick="changeScreen(['editor', 'preview']);">
 						<i class="fa-solid fa-pen-to-square"></i>
 						<span>Editor de Mensaje</span>
 					</li>
@@ -60,6 +58,9 @@
 						</div>
 					</div>
 					<div>
+						<button id="save-embed">
+							<i class="fa-solid fa-floppy-disk"></i>
+						</button>
 						<button id="json">
 							<i class="fa-solid fa-code"></i>
 						</button>
@@ -89,11 +90,23 @@
 					<div class="field-group" id="content">
 						<div class="agrupation">
 							<div class="toolbar">
-								<button><strong>B</strong></button>
-								<button><em>I</em></button>
-								<button><u>U</u></button>
-								<button><del>S</del></button>
-								<button>
+								<button class="format-btn" data-format="bold">
+									<strong>B</strong>
+								</button>
+								<button class="format-btn" data-format="italic">
+									<em>I</em>
+								</button>
+								<button
+									class="format-btn"
+									data-format="underline">
+									<u>U</u>
+								</button>
+								<button
+									class="format-btn"
+									data-format="strikethrough">
+									<del>S</del>
+								</button>
+								<button id="emoji-btn">
 									<i class="fa-regular fa-face-smile"></i>
 								</button>
 							</div>
@@ -136,12 +149,22 @@
 					</div>
 				</div>
 			</section>
-			<section id="preview"></section>
-			<section id="msg-selector"></section>
+			<section id="preview">
+				<div id="preview-content" class="discord-message">
+					<div class="message-content"></div>
+					<div class="embeds"></div>
+					<div class="components"></div>
+				</div>
+			</section>
+			<section id="saved">
+				<h2>Saved Embeds</h2>
+				<ul id="saved-embeds-list"></ul>
+			</section>
 		</main>
+		<div id="emoji-picker" class="hidden">
+			<!-- Aquí se cargarán los emojis dinámicamente -->
+		</div>
 		<footer>This webpage is part of the Dev Team of LionRP</footer>
-
-		<!-- TEMPLATES !-->
 
 		<template id="row">
 			<details open>
@@ -163,21 +186,13 @@
 					<div class="agrupation">
 						<label for="type">Tipo</label>
 						<select name="type">
-							<option value="">Azul</option>
-							<option value="">Gris</option>
-							<option value="">Verde</option>
-							<option value="">Rojo</option>
-							<option value="">Enlace</option>
+							<option value="primary">Azul</option>
+							<option value="secondary">Gris</option>
+							<option value="success">Verde</option>
+							<option value="danger">Rojo</option>
+							<option value="link">Enlace</option>
 						</select>
 					</div>
-					<div
-						style="
-							width: 100%;
-							opacity: 0;
-							height: 5px;
-							margin-bottom: -50px;
-							margin-top: -10px;
-						"></div>
 					<div class="agrupation" style="max-width: 50px; flex: 0">
 						<label for="emoji">Emoji</label>
 						<input name="emoji" type="text" />
@@ -187,8 +202,8 @@
 						<input name="b-text" maxlength="80" type="text" />
 					</div>
 					<div class="agrupation" id="link">
-						<label for="b-text">Enlace</label>
-						<input name="b-text" type="url" />
+						<label for="b-url">Enlace</label>
+						<input name="b-url" type="url" />
 					</div>
 				</div>
 			</details>
@@ -199,7 +214,6 @@
 				<summary>Embed</summary>
 				<details>
 					<summary>Autor</summary>
-
 					<div class="field-group embed" id="components">
 						<div class="agrupation">
 							<label for="author-name"
@@ -222,7 +236,6 @@
 				</details>
 				<details>
 					<summary>Cuerpo</summary>
-
 					<div class="field-group embed" id="components">
 						<div class="agrupation">
 							<label for="etitle"
@@ -230,23 +243,25 @@
 							>
 							<input name="etitle" maxlength="256" type="text" />
 						</div>
-						<div
-							style="
-								width: 100%;
-								opacity: 0;
-								height: 5px;
-								margin-bottom: -50px;
-								margin-top: -10px;
-							"></div>
 						<div class="agrupation">
 							<div class="toolbar">
-								<button>
+								<button class="format-btn" data-format="bold">
 									<strong>B</strong>
 								</button>
-								<button><em>I</em></button>
-								<button><u>U</u></button>
-								<button><del>S</del></button>
-								<button>
+								<button class="format-btn" data-format="italic">
+									<em>I</em>
+								</button>
+								<button
+									class="format-btn"
+									data-format="underline">
+									<u>U</u>
+								</button>
+								<button
+									class="format-btn"
+									data-format="strikethrough">
+									<del>S</del>
+								</button>
+								<button id="emoji-btn">
 									<i class="fa-regular fa-face-smile"></i>
 								</button>
 							</div>
@@ -258,14 +273,6 @@
 								name="edescription"
 								type="text"></textarea>
 						</div>
-						<div
-							style="
-								width: 100%;
-								opacity: 0;
-								height: 5px;
-								margin-bottom: -5px;
-								margin-top: -5px;
-							"></div>
 						<div class="agrupation">
 							<label for="url">URL</label>
 							<input name="url" type="text" />
@@ -275,7 +282,7 @@
 							<div
 								style="
 									display: flex;
-									align-content: center;
+									align-items: center;
 									gap: 5px;
 								">
 								<span
@@ -294,7 +301,8 @@
 										"
 										name="color"
 										type="text"
-								/></span>
+										value="7289da" />
+								</span>
 								<div
 									onclick="this.parentElement.querySelector('input[type=\'color\']').click();"
 									id="color-picker"></div>
@@ -305,21 +313,21 @@
 				</details>
 				<details>
 					<summary>Imágenes</summary>
-
 					<div class="field-group embed" id="components">
 						<div class="agrupation">
 							<label for="image-url">URL Imagen</label>
 							<input name="image-url" type="text" />
 						</div>
 						<div class="agrupation">
-							<label for="image-url">URL Imagen Miniatura</label>
-							<input name="image-url" type="text" />
+							<label for="thumbnail-url"
+								>URL Imagen Miniatura</label
+							>
+							<input name="thumbnail-url" type="text" />
 						</div>
 					</div>
 				</details>
 				<details>
 					<summary>Footer</summary>
-
 					<div class="field-group embed" id="components">
 						<div class="agrupation">
 							<label for="footer-text">Texto</label>
@@ -330,14 +338,16 @@
 							<input name="footer-image-url" type="text" />
 						</div>
 						<div class="agrupation">
-							<label for="footer-timestamp"
+							<label for="footer-timestamp-date"
 								>Fecha Estampada</label
 							>
-							<input name="footer-timestamp" type="date" />
+							<input name="footer-timestamp-date" type="date" />
 						</div>
 						<div class="agrupation">
-							<label for="footer-timestamp">Hora Estampada</label>
-							<input name="footer-timestamp" type="time" />
+							<label for="footer-timestamp-time"
+								>Hora Estampada</label
+							>
+							<input name="footer-timestamp-time" type="time" />
 						</div>
 					</div>
 				</details>
