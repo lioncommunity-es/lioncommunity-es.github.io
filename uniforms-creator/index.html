@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link
+			rel="icon"
+			type="image/png"
+			href="https://cdn.discordapp.com/icons/932991184694022154/accd2a7d51cbe333bb6ceb2d1a10030a.png?size=4096" />
+		<title>Uniform Creator</title>
+		<style>
+			/* CSS styles */
+			body {
+				font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+				line-height: 1.6;
+				margin: 0;
+				padding: 0;
+				background-color: #1a1a1a;
+				color: #e0e0e0;
+			}
+			.container {
+				display: flex;
+				min-height: 100vh;
+			}
+			aside {
+				width: 300px;
+				background-color: #2a2a2a;
+				padding: 20px;
+				overflow-y: auto;
+			}
+			main {
+				flex-grow: 1;
+				padding: 20px;
+				overflow-y: auto;
+			}
+			h1,
+			h2,
+			h3 {
+				color: #ffffff;
+			}
+			.section {
+				margin-bottom: 20px;
+				padding: 20px;
+				background-color: #333333;
+				border-radius: 5px;
+				box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+			}
+			label {
+				display: block;
+				margin-bottom: 5px;
+				font-weight: bold;
+			}
+			input[type="text"],
+			input[type="number"],
+			select {
+				width: 100%;
+				padding: 8px;
+				margin-bottom: 15px;
+				background-color: #4a4a4a;
+				border: 1px solid #555555;
+				border-radius: 4px;
+				color: #e0e0e0;
+				font-size: 14px;
+			}
+			button {
+				background-color: #4caf50;
+				color: white;
+				padding: 10px 15px;
+				border: none;
+				border-radius: 4px;
+				cursor: pointer;
+				margin-right: 10px;
+				margin-bottom: 10px;
+				transition: background-color 0.3s;
+			}
+			button:hover {
+				background-color: #45a049;
+			}
+			#uniformList {
+				margin-top: 20px;
+			}
+			.uniform-item {
+				background-color: #444444;
+				padding: 15px;
+				margin-bottom: 15px;
+				border-radius: 4px;
+				transition: background-color 0.3s;
+			}
+			.uniform-item:hover {
+				background-color: #555555;
+			}
+			.file-input {
+				display: none;
+			}
+			.gender-section {
+				margin-bottom: 20px;
+				background-color: #3a3a3a;
+				padding: 15px;
+				border-radius: 4px;
+			}
+			.clothing-item {
+				display: flex;
+				justify-content: space-between;
+				margin-bottom: 10px;
+			}
+			.clothing-item input {
+				width: 45%;
+			}
+			.tabs {
+				display: flex;
+				margin-bottom: 20px;
+			}
+			.tab {
+				padding: 10px 20px;
+				background-color: #4a4a4a;
+				color: #e0e0e0;
+				border: none;
+				cursor: pointer;
+				transition: background-color 0.3s;
+			}
+			.tab.active {
+				background-color: #5a5a5a;
+				font-weight: bold;
+			}
+			.tab-content {
+				display: none;
+			}
+			.tab-content.active {
+				display: block;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<aside>
+				<h2>Saved Uniforms</h2>
+				<div id="savedUniformsList"></div>
+			</aside>
+			<main>
+				<h1>Uniform Creator</h1>
+
+				<div class="section">
+					<div class="tabs">
+						<button
+							class="tab active"
+							onclick="openTab(event, 'generalUniform')">
+							General Uniform
+						</button>
+						<button
+							class="tab"
+							onclick="openTab(event, 'rankUniform')">
+							Rank Uniform
+						</button>
+					</div>
+
+					<div id="generalUniform" class="tab-content active">
+						<h2>Create General Uniform</h2>
+						<div id="generalUniformForm"></div>
+					</div>
+
+					<div id="rankUniform" class="tab-content">
+						<h2>Create Rank Uniform</h2>
+						<div id="rankUniformForm"></div>
+					</div>
+				</div>
+
+				<div class="section">
+					<h2>Import/Export</h2>
+					<button onclick="exportJSON()">Export JSON</button>
+					<button
+						onclick="document.getElementById('jsonInput').click()">
+						Import JSON
+					</button>
+					<input
+						type="file"
+						id="jsonInput"
+						class="file-input"
+						accept=".json"
+						onchange="importJSON(event)" />
+
+					<button onclick="exportLUA()">Export LUA</button>
+					<button
+						onclick="document.getElementById('luaInput').click()">
+						Import LUA
+					</button>
+					<input
+						type="file"
+						id="luaInput"
+						class="file-input"
+						accept=".lua"
+						onchange="importLUA(event)" />
+				</div>
+			</main>
+		</div>
+
+		<script>
+			// JavaScript code
+			let uniforms = [];
+			const clothingItems = [
+				"t-shirt",
+				"bag",
+				"vest",
+				"mask",
+				"torso2",
+				"accessory",
+				"arms",
+				"decals",
+				"pants",
+				"shoes",
+				"hat",
+			];
+
+			function createUniformForm(formId, isRankUniform) {
+				const form = document.getElementById(formId);
+				form.innerHTML = `
+                <label for="${formId}_name">Uniform Name:</label>
+                <input type="text" id="${formId}_name" required>
+                
+                <label for="${formId}_label">Label:</label>
+                <input type="text" id="${formId}_label" required>
+                
+                <label for="${formId}_bulletproof">Bulletproof:</label>
+                <input type="number" id="${formId}_bulletproof" required>
+                
+                ${
+					isRankUniform
+						? `
+                    <label for="${formId}_rank">Rank:</label>
+                    <input type="text" id="${formId}_rank" required>
+                `
+						: ""
+				}
+                
+                <div class="gender-section">
+                    <h3>Male Uniform</h3>
+                    <div id="${formId}_maleUniform"></div>
+                </div>
+                
+                <div class="gender-section">
+                    <h3>Female Uniform</h3>
+                    <div id="${formId}_femaleUniform"></div>
+                </div>
+                
+                <button onclick="createUniform('${formId}', ${isRankUniform})">Create Uniform</button>
+            `;
+
+				createClothingInputs(`${formId}_male`);
+				createClothingInputs(`${formId}_female`);
+			}
+
+			function createClothingInputs(prefix) {
+				const container = document.getElementById(`${prefix}Uniform`);
+				container.innerHTML = "";
+				clothingItems.forEach((item) => {
+					const div = document.createElement("div");
+					div.className = "clothing-item";
+					div.innerHTML = `
+                    <label>${item}:</label>
+                    <input type="number" id="${prefix}_${item}_item" placeholder="Item">
+                    <input type="number" id="${prefix}_${item}_texture" placeholder="Texture">
+                `;
+					container.appendChild(div);
+				});
+			}
+
+			function createUniform(formId, isRankUniform) {
+				const name = document.getElementById(`${formId}_name`).value;
+				const label = document.getElementById(`${formId}_label`).value;
+				const bulletproof = parseInt(
+					document.getElementById(`${formId}_bulletproof`).value
+				);
+				const rank = isRankUniform
+					? document.getElementById(`${formId}_rank`).value
+					: "";
+
+				if (
+					!name ||
+					!label ||
+					isNaN(bulletproof) ||
+					(isRankUniform && !rank)
+				) {
+					alert("Please fill all required fields");
+					return;
+				}
+
+				const uniform = {
+					type: isRankUniform ? "rank" : "general",
+					name,
+					label,
+					bulletproof,
+					rank,
+					male: {},
+					female: {},
+				};
+
+				["male", "female"].forEach((gender) => {
+					clothingItems.forEach((item) => {
+						uniform[gender][item] = {
+							item:
+								parseInt(
+									document.getElementById(
+										`${formId}_${gender}_${item}_item`
+									).value
+								) || 0,
+							texture:
+								parseInt(
+									document.getElementById(
+										`${formId}_${gender}_${item}_texture`
+									).value
+								) || 0,
+						};
+					});
+				});
+
+				uniforms.push(uniform);
+				updateSavedUniformsList();
+				clearForm(formId);
+			}
+
+			function updateSavedUniformsList() {
+				const list = document.getElementById("savedUniformsList");
+				list.innerHTML = "";
+				uniforms.forEach((uniform, index) => {
+					const item = document.createElement("div");
+					item.className = "uniform-item";
+					item.innerHTML = `
+                    <strong>${uniform.name}</strong> (${uniform.type})
+                    <br>Label: ${uniform.label}
+                    <br>Bulletproof: ${uniform.bulletproof}
+                    ${
+						uniform.type === "rank"
+							? `<br>Rank: ${uniform.rank}`
+							: ""
+					}
+                    <br><button onclick="editUniform(${index})">Edit</button>
+                    <button onclick="deleteUniform(${index})">Delete</button>
+                `;
+					list.appendChild(item);
+				});
+			}
+
+			function editUniform(index) {
+				const uniform = uniforms[index];
+				const formId =
+					uniform.type === "rank" ? "rankUniform" : "generalUniform";
+				openTab(null, formId);
+
+				document.getElementById(`${formId}_name`).value = uniform.name;
+				document.getElementById(`${formId}_label`).value =
+					uniform.label;
+				document.getElementById(`${formId}_bulletproof`).value =
+					uniform.bulletproof;
+				if (uniform.type === "rank") {
+					document.getElementById(`${formId}_rank`).value =
+						uniform.rank;
+				}
+
+				["male", "female"].forEach((gender) => {
+					clothingItems.forEach((item) => {
+						document.getElementById(
+							`${formId}_${gender}_${item}_item`
+						).value = uniform[gender][item].item;
+						document.getElementById(
+							`${formId}_${gender}_${item}_texture`
+						).value = uniform[gender][item].texture;
+					});
+				});
+
+				uniforms.splice(index, 1);
+				updateSavedUniformsList();
+			}
+
+			function deleteUniform(index) {
+				uniforms.splice(index, 1);
+				updateSavedUniformsList();
+			}
+
+			function clearForm(formId) {
+				document.getElementById(`${formId}_name`).value = "";
+				document.getElementById(`${formId}_label`).value = "";
+				document.getElementById(`${formId}_bulletproof`).value = "";
+				if (formId === "rankUniform") {
+					document.getElementById(`${formId}_rank`).value = "";
+				}
+				["male", "female"].forEach((gender) => {
+					clothingItems.forEach((item) => {
+						document.getElementById(
+							`${formId}_${gender}_${item}_item`
+						).value = "";
+						document.getElementById(
+							`${formId}_${gender}_${item}_texture`
+						).value = "";
+					});
+				});
+			}
+
+			function exportJSON() {
+				const dataStr =
+					"data:text/json;charset=utf-8," +
+					encodeURIComponent(JSON.stringify(uniforms, null, 2));
+				const downloadAnchorNode = document.createElement("a");
+				downloadAnchorNode.setAttribute("href", dataStr);
+				downloadAnchorNode.setAttribute("download", "uniforms.json");
+				document.body.appendChild(downloadAnchorNode);
+				downloadAnchorNode.click();
+				downloadAnchorNode.remove();
+			}
+
+			function importJSON(event) {
+				const file = event.target.files[0];
+				if (file) {
+					const reader = new FileReader();
+					reader.onload = function (e) {
+						try {
+							uniforms = JSON.parse(e.target.result);
+							updateSavedUniformsList();
+						} catch (error) {
+							console.error("Error parsing JSON file:", error);
+							alert("Error parsing JSON file");
+						}
+					};
+					reader.readAsText(file);
+				}
+			}
+
+			function exportLUA() {
+				let luaContent = "uniforms = {\n";
+				uniforms.forEach((uniform, index) => {
+					luaContent += `  [${index + 1}] = {\n`;
+					luaContent += `    bulletproof = ${uniform.bulletproof},\n`;
+					luaContent += `    label = "${uniform.label}",\n`;
+					luaContent += `    type = "${uniform.type}",\n`;
+					if (uniform.type === "rank") {
+						luaContent += `    rank = "${uniform.rank}",\n`;
+					}
+					["male", "female"].forEach((gender) => {
+						luaContent += `    ${gender} = {\n`;
+						Object.entries(uniform[gender]).forEach(
+							([item, values]) => {
+								luaContent += `      ["${item}"] = { item = ${values.item}, texture = ${values.texture} },\n`;
+							}
+						);
+						luaContent += `    },\n`;
+					});
+					luaContent += `  },\n`;
+				});
+				luaContent += "}";
+
+				const dataStr =
+					"data:text/plain;charset=utf-8," +
+					encodeURIComponent(luaContent);
+				const downloadAnchorNode = document.createElement("a");
+				downloadAnchorNode.setAttribute("href", dataStr);
+				downloadAnchorNode.setAttribute("download", "uniforms.lua");
+				document.body.appendChild(downloadAnchorNode);
+				downloadAnchorNode.click();
+				downloadAnchorNode.remove();
+			}
+
+			function importLUA(event) {
+				const file = event.target.files[0];
+				if (file) {
+					const reader = new FileReader();
+					reader.onload = function (e) {
+						try {
+							const luaContent = e.target.result;
+							const uniformsMatch = luaContent.match(
+								/uniforms\s*=\s*{([^}]*)}/s
+							);
+							if (uniformsMatch) {
+								const uniformsString = uniformsMatch[1];
+								const uniformMatches = uniformsString.match(
+									/\[\d+\]\s*=\s*{[^}]*}/g
+								);
+								uniforms = uniformMatches.map((match) => {
+									const uniform = {};
+									const properties =
+										match.match(/(\w+)\s*=\s*([^,}]+)/g);
+									properties.forEach((prop) => {
+										const [key, value] =
+											prop.split(/\s*=\s*/);
+										if (
+											key === "male" ||
+											key === "female"
+										) {
+											uniform[key] = {};
+											const genderItems = value.match(
+												/\["([^"]+)"\]\s*=\s*{\s*item\s*=\s*(\d+),\s*texture\s*=\s*(\d+)\s*}/g
+											);
+											genderItems.forEach((item) => {
+												const [
+													itemName,
+													itemValue,
+													textureValue,
+												] = item.match(
+													/\["([^"]+)"\]\s*=\s*{\s*item\s*=\s*(\d+),\s*texture\s*=\s*(\d+)\s*}/
+												);
+												uniform[key][itemName] = {
+													item: parseInt(itemValue),
+													texture:
+														parseInt(textureValue),
+												};
+											});
+										} else {
+											uniform[key] = isNaN(value)
+												? value.replace(/"/g, "")
+												: parseInt(value);
+										}
+									});
+									return uniform;
+								});
+								updateSavedUniformsList();
+							} else {
+								throw new Error("Invalid LUA format");
+							}
+						} catch (error) {
+							console.error("Error parsing LUA file:", error);
+							alert("Error parsing LUA file");
+						}
+					};
+					reader.readAsText(file);
+				}
+			}
+
+			function openTab(evt, tabName) {
+				const tabContents =
+					document.getElementsByClassName("tab-content");
+				for (let i = 0; i < tabContents.length; i++) {
+					tabContents[i].style.display = "none";
+				}
+
+				const tabs = document.getElementsByClassName("tab");
+				for (let i = 0; i < tabs.length; i++) {
+					tabs[i].className = tabs[i].className.replace(
+						" active",
+						""
+					);
+				}
+
+				document.getElementById(tabName).style.display = "block";
+				if (evt) evt.currentTarget.className += " active";
+			}
+
+			// Initialize forms
+			createUniformForm("generalUniformForm", false);
+			createUniformForm("rankUniformForm", true);
+		</script>
+	</body>
+</html>
