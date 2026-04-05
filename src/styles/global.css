@@ -1,0 +1,129 @@
+@import "tailwindcss";
+
+@theme {
+  /* Orange palette */
+  --color-orange-50: oklch(0.98 0.02 70);
+  --color-orange-100: oklch(0.95 0.04 70);
+  --color-orange-200: oklch(0.88 0.08 65);
+  --color-orange-300: oklch(0.80 0.13 60);
+  --color-orange-400: oklch(0.72 0.17 55);
+  --color-orange-500: oklch(0.65 0.2 50);
+  --color-orange-600: oklch(0.58 0.2 45);
+  --color-orange-700: oklch(0.50 0.18 42);
+  --color-orange-800: oklch(0.42 0.14 40);
+  --color-orange-900: oklch(0.35 0.1 38);
+
+  /* Dark surface palette */
+  --color-surface-50: oklch(0.25 0.005 260);
+  --color-surface-100: oklch(0.22 0.005 260);
+  --color-surface-200: oklch(0.19 0.005 260);
+  --color-surface-300: oklch(0.16 0.005 260);
+  --color-surface-400: oklch(0.14 0.005 260);
+  --color-surface-500: oklch(0.12 0.005 260);
+  --color-surface-600: oklch(0.10 0.005 260);
+  --color-surface-700: oklch(0.08 0.005 260);
+  --color-surface-800: oklch(0.06 0.005 260);
+  --color-surface-900: oklch(0.04 0.005 260);
+
+  /* Fonts */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Animations */
+  --animate-fade-in: fade-in 0.6s ease-out both;
+  --animate-slide-up: slide-up 0.5s ease-out both;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-pulse-glow: pulse-glow 3s ease-in-out infinite;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Staggered animation delays */
+@utility stagger-1 {
+  animation-delay: 0.05s;
+}
+@utility stagger-2 {
+  animation-delay: 0.1s;
+}
+@utility stagger-3 {
+  animation-delay: 0.15s;
+}
+@utility stagger-4 {
+  animation-delay: 0.2s;
+}
+@utility stagger-5 {
+  animation-delay: 0.25s;
+}
+@utility stagger-6 {
+  animation-delay: 0.3s;
+}
+@utility stagger-7 {
+  animation-delay: 0.35s;
+}
+@utility stagger-8 {
+  animation-delay: 0.4s;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection color */
+::selection {
+  background-color: oklch(0.65 0.2 50 / 0.3);
+  color: white;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: oklch(0.08 0.005 260);
+}
+::-webkit-scrollbar-thumb {
+  background: oklch(0.25 0.005 260);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.65 0.2 50);
+}

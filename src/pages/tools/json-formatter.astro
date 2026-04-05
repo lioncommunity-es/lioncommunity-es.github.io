@@ -1,0 +1,218 @@
+---
+import ToolLayout from "@layouts/ToolLayout.astro";
+---
+
+<ToolLayout
+    title="JSON Formatter"
+    description="Formatea, valida y minifica JSON al instante. Soporte para copiar al portapapeles y detección de errores."
+    icon="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5">
+    <div class="space-y-4">
+        <!-- Action bar -->
+        <div class="flex flex-wrap items-center gap-2">
+            <button
+                id="format-btn"
+                class="rounded-lg bg-orange-500 px-4 py-2 text-xs font-medium text-white shadow-lg shadow-orange-500/20 transition-all hover:bg-orange-600 active:scale-95">
+                Formatear
+            </button>
+            <button
+                id="minify-btn"
+                class="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-white/60 transition-all hover:border-orange-500/30 hover:bg-orange-500/10 hover:text-orange-400">
+                Minificar
+            </button>
+            <button
+                id="validate-btn"
+                class="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-white/60 transition-all hover:border-orange-500/30 hover:bg-orange-500/10 hover:text-orange-400">
+                Validar
+            </button>
+            <div class="flex-1"></div>
+            <button
+                id="copy-json-btn"
+                class="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-white/40 transition-all hover:border-orange-500/30 hover:bg-orange-500/10 hover:text-orange-400">
+                Copiar
+            </button>
+            <button
+                id="clear-json-btn"
+                class="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-white/40 transition-all hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400">
+                Limpiar
+            </button>
+            <!-- Indent selector -->
+            <select
+                id="indent-select"
+                class="bg-surface-600 rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60 outline-none focus:border-orange-500/40">
+                <option value="2">2 espacios</option>
+                <option value="4">4 espacios</option>
+                <option value="tab">Tab</option>
+            </select>
+        </div>
+
+        <!-- Status bar -->
+        <div
+            id="json-status"
+            class="hidden rounded-xl border px-4 py-2.5 text-xs font-medium">
+        </div>
+
+        <!-- Editor area -->
+        <div class="grid gap-4 lg:grid-cols-2">
+            <!-- Input -->
+            <div class="rounded-2xl border border-white/6 bg-white/3 p-1">
+                <div class="flex items-center justify-between px-4 py-2">
+                    <span
+                        class="text-[11px] font-medium tracking-wide text-white/30 uppercase"
+                        >Entrada</span
+                    >
+                    <span
+                        id="input-stats"
+                        class="font-mono text-[10px] text-white/20"
+                        >0 líneas · 0 bytes</span
+                    >
+                </div>
+                <textarea
+                    id="json-input"
+                    class="bg-surface-700 h-96 w-full resize-none rounded-xl p-4 font-mono text-sm leading-relaxed text-white/80 placeholder-white/20 outline-none"
+                    placeholder='{\n  "ejemplo": "Pega tu JSON aquí...",\n  "numero": 42\n}'
+                    spellcheck="false"></textarea>
+            </div>
+
+            <!-- Output -->
+            <div class="rounded-2xl border border-white/6 bg-white/3 p-1">
+                <div class="flex items-center justify-between px-4 py-2">
+                    <span
+                        class="text-[11px] font-medium tracking-wide text-white/30 uppercase"
+                        >Resultado</span
+                    >
+                    <span
+                        id="output-stats"
+                        class="font-mono text-[10px] text-white/20"
+                        >0 líneas · 0 bytes</span
+                    >
+                </div>
+                <pre
+                    id="json-output"
+                    class="bg-surface-700 h-96 w-full overflow-auto rounded-xl p-4 font-mono text-sm leading-relaxed text-green-300/80">
+                </pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const input = document.getElementById(
+            "json-input",
+        ) as HTMLTextAreaElement;
+        const output = document.getElementById("json-output")!;
+        const formatBtn = document.getElementById("format-btn")!;
+        const minifyBtn = document.getElementById("minify-btn")!;
+        const validateBtn = document.getElementById("validate-btn")!;
+        const copyBtn = document.getElementById("copy-json-btn")!;
+        const clearBtn = document.getElementById("clear-json-btn")!;
+        const indentSelect = document.getElementById(
+            "indent-select",
+        ) as HTMLSelectElement;
+        const status = document.getElementById("json-status")!;
+        const inputStats = document.getElementById("input-stats")!;
+        const outputStats = document.getElementById("output-stats")!;
+
+        function getIndent(): string | number {
+            const val = indentSelect.value;
+            return val === "tab" ? "\t" : parseInt(val);
+        }
+
+        function showStatus(msg: string, type: "success" | "error" | "info") {
+            status.classList.remove("hidden");
+            status.className =
+                "rounded-xl border px-4 py-2.5 text-xs font-medium";
+            if (type === "success") {
+                status.classList.add(
+                    "border-green-500/20",
+                    "bg-green-500/5",
+                    "text-green-400",
+                );
+            } else if (type === "error") {
+                status.classList.add(
+                    "border-red-500/20",
+                    "bg-red-500/5",
+                    "text-red-400",
+                );
+            } else {
+                status.classList.add(
+                    "border-blue-500/20",
+                    "bg-blue-500/5",
+                    "text-blue-400",
+                );
+            }
+            status.textContent = msg;
+        }
+
+        function updateStats(el: HTMLElement, text: string) {
+            const lines = text ? text.split("\n").length : 0;
+            const bytes = new Blob([text]).size;
+            el.textContent = `${lines} líneas · ${bytes.toLocaleString()} bytes`;
+        }
+
+        input.addEventListener("input", () =>
+            updateStats(inputStats, input.value),
+        );
+
+        formatBtn.addEventListener("click", () => {
+            try {
+                const parsed = JSON.parse(input.value);
+                const formatted = JSON.stringify(parsed, null, getIndent());
+                output.textContent = formatted;
+                updateStats(outputStats, formatted);
+                showStatus("✓ JSON formateado correctamente", "success");
+            } catch (e: any) {
+                output.textContent = "";
+                showStatus(`✗ Error: ${e.message}`, "error");
+            }
+        });
+
+        minifyBtn.addEventListener("click", () => {
+            try {
+                const parsed = JSON.parse(input.value);
+                const minified = JSON.stringify(parsed);
+                output.textContent = minified;
+                updateStats(outputStats, minified);
+                showStatus(
+                    `✓ JSON minificado — ${new Blob([minified]).size} bytes`,
+                    "success",
+                );
+            } catch (e: any) {
+                output.textContent = "";
+                showStatus(`✗ Error: ${e.message}`, "error");
+            }
+        });
+
+        validateBtn.addEventListener("click", () => {
+            try {
+                const parsed = JSON.parse(input.value);
+                const type = Array.isArray(parsed) ? "Array" : typeof parsed;
+                const keys =
+                    typeof parsed === "object" && parsed !== null
+                        ? Object.keys(parsed).length
+                        : 0;
+                showStatus(
+                    `✓ JSON válido — Tipo: ${type}${keys ? ` · ${keys} claves` : ""}`,
+                    "success",
+                );
+            } catch (e: any) {
+                showStatus(`✗ JSON inválido: ${e.message}`, "error");
+            }
+        });
+
+        copyBtn.addEventListener("click", async () => {
+            const text = output.textContent || input.value;
+            await navigator.clipboard.writeText(text);
+            copyBtn.textContent = "¡Copiado!";
+            setTimeout(() => {
+                copyBtn.textContent = "Copiar";
+            }, 1500);
+        });
+
+        clearBtn.addEventListener("click", () => {
+            input.value = "";
+            output.textContent = "";
+            status.classList.add("hidden");
+            updateStats(inputStats, "");
+            updateStats(outputStats, "");
+        });
+    </script>
+</ToolLayout>

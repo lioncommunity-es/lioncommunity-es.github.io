@@ -1,0 +1,497 @@
+---
+import ToolLayout from "@layouts/ToolLayout.astro";
+---
+
+<ToolLayout
+    title="Color Converter"
+    description="Convierte colores entre HEX, RGB, HSL y OKLCH. Incluye un picker visual interactivo."
+    icon="M15 4.5l5.5 5.5-12.729 12.729a4 4 0 0 1-2.828 1.171H2v-2.943a4 4 0 0 1 1.172-2.828L15 4.5z">
+    <div class="space-y-6">
+        <!-- Preview & Picker -->
+        <div class="grid gap-4 sm:grid-cols-2">
+            <div class="rounded-2xl border border-white/6 bg-white/3 p-5">
+                <label class="mb-3 block text-xs font-medium text-white/40"
+                    >Vista previa</label
+                >
+                <div
+                    id="color-preview"
+                    class="h-40 rounded-xl border border-white/10 transition-colors duration-300"
+                    style="background-color: #f97316;">
+                </div>
+                <div class="mt-3 flex items-center gap-3">
+                    <input
+                        id="color-picker"
+                        type="color"
+                        value="#f97316"
+                        class="h-10 w-14 cursor-pointer rounded-lg border border-white/10 bg-transparent"
+                    />
+                    <span id="color-name" class="text-sm text-white/50"
+                        >Orange</span
+                    >
+                </div>
+            </div>
+
+            <!-- Sliders -->
+            <div class="rounded-2xl border border-white/6 bg-white/3 p-5">
+                <label class="mb-3 block text-xs font-medium text-white/40"
+                    >Ajuste RGB</label
+                >
+                <div class="space-y-4">
+                    <div>
+                        <div class="mb-1 flex justify-between text-[11px]">
+                            <span class="text-red-400">R</span><span
+                                id="r-val"
+                                class="font-mono text-white/40">249</span>
+                        </div>
+                        <input
+                            id="r-slider"
+                            type="range"
+                            min="0"
+                            max="255"
+                            value="249"
+                            class="w-full accent-red-500"
+                        />
+                    </div>
+                    <div>
+                        <div class="mb-1 flex justify-between text-[11px]">
+                            <span class="text-green-400">G</span><span
+                                id="g-val"
+                                class="font-mono text-white/40">115</span>
+                        </div>
+                        <input
+                            id="g-slider"
+                            type="range"
+                            min="0"
+                            max="255"
+                            value="115"
+                            class="w-full accent-green-500"
+                        />
+                    </div>
+                    <div>
+                        <div class="mb-1 flex justify-between text-[11px]">
+                            <span class="text-blue-400">B</span><span
+                                id="b-val"
+                                class="font-mono text-white/40">22</span>
+                        </div>
+                        <input
+                            id="b-slider"
+                            type="range"
+                            min="0"
+                            max="255"
+                            value="22"
+                            class="w-full accent-blue-500"
+                        />
+                    </div>
+                    <div>
+                        <div class="mb-1 flex justify-between text-[11px]">
+                            <span class="text-white/40">A</span><span
+                                id="a-val"
+                                class="font-mono text-white/40">1.0</span>
+                        </div>
+                        <input
+                            id="a-slider"
+                            type="range"
+                            min="0"
+                            max="100"
+                            value="100"
+                            class="w-full accent-white"
+                        />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Color values -->
+        <div class="grid gap-3 sm:grid-cols-2">
+            <div class="group rounded-xl border border-white/6 bg-white/3 p-4">
+                <div class="mb-1.5 flex items-center justify-between">
+                    <span
+                        class="text-[11px] font-medium text-white/30 uppercase"
+                        >HEX</span
+                    >
+                    <button
+                        data-copy-target="hex-value"
+                        class="copy-btn text-[11px] text-white/20 opacity-0 transition-all group-hover:opacity-100 hover:text-orange-400"
+                        >Copiar</button
+                    >
+                </div>
+                <input
+                    id="hex-value"
+                    type="text"
+                    value="#f97316"
+                    class="w-full bg-transparent font-mono text-sm text-orange-300 outline-none"
+                    spellcheck="false"
+                />
+            </div>
+            <div class="group rounded-xl border border-white/6 bg-white/3 p-4">
+                <div class="mb-1.5 flex items-center justify-between">
+                    <span
+                        class="text-[11px] font-medium text-white/30 uppercase"
+                        >RGB</span
+                    >
+                    <button
+                        data-copy-target="rgb-value"
+                        class="copy-btn text-[11px] text-white/20 opacity-0 transition-all group-hover:opacity-100 hover:text-orange-400"
+                        >Copiar</button
+                    >
+                </div>
+                <input
+                    id="rgb-value"
+                    type="text"
+                    value="rgb(249, 115, 22)"
+                    class="w-full bg-transparent font-mono text-sm text-white/60 outline-none"
+                    spellcheck="false"
+                />
+            </div>
+            <div class="group rounded-xl border border-white/6 bg-white/3 p-4">
+                <div class="mb-1.5 flex items-center justify-between">
+                    <span
+                        class="text-[11px] font-medium text-white/30 uppercase"
+                        >HSL</span
+                    >
+                    <button
+                        data-copy-target="hsl-value"
+                        class="copy-btn text-[11px] text-white/20 opacity-0 transition-all group-hover:opacity-100 hover:text-orange-400"
+                        >Copiar</button
+                    >
+                </div>
+                <input
+                    id="hsl-value"
+                    type="text"
+                    value="hsl(25, 95%, 53%)"
+                    class="w-full bg-transparent font-mono text-sm text-white/60 outline-none"
+                    spellcheck="false"
+                />
+            </div>
+            <div class="group rounded-xl border border-white/6 bg-white/3 p-4">
+                <div class="mb-1.5 flex items-center justify-between">
+                    <span
+                        class="text-[11px] font-medium text-white/30 uppercase"
+                        >OKLCH</span
+                    >
+                    <button
+                        data-copy-target="oklch-value"
+                        class="copy-btn text-[11px] text-white/20 opacity-0 transition-all group-hover:opacity-100 hover:text-orange-400"
+                        >Copiar</button
+                    >
+                </div>
+                <input
+                    id="oklch-value"
+                    type="text"
+                    value=""
+                    class="w-full bg-transparent font-mono text-sm text-white/60 outline-none"
+                    spellcheck="false"
+                    readonly
+                />
+            </div>
+        </div>
+
+        <!-- Palette generator -->
+        <div class="rounded-2xl border border-white/6 bg-white/3 p-5">
+            <h3
+                class="mb-4 text-xs font-semibold tracking-wide text-white/50 uppercase">
+                Paleta generada
+            </h3>
+            <div id="palette" class="grid grid-cols-5 gap-2 sm:grid-cols-10">
+            </div>
+        </div>
+
+        <!-- Contrast check -->
+        <div class="rounded-2xl border border-white/6 bg-white/3 p-5">
+            <h3
+                class="mb-4 text-xs font-semibold tracking-wide text-white/50 uppercase">
+                Contraste (WCAG)
+            </h3>
+            <div class="grid gap-3 sm:grid-cols-2">
+                <div
+                    class="rounded-xl p-4 text-center"
+                    id="contrast-white"
+                    style="background-color: #f97316;">
+                    <span class="text-sm font-semibold text-white"
+                        >Texto blanco</span
+                    >
+                    <p
+                        id="contrast-white-ratio"
+                        class="mt-1 text-xs text-white/70">
+                        —
+                    </p>
+                </div>
+                <div
+                    class="rounded-xl p-4 text-center"
+                    id="contrast-black"
+                    style="background-color: #f97316;">
+                    <span class="text-sm font-semibold text-black"
+                        >Texto negro</span
+                    >
+                    <p
+                        id="contrast-black-ratio"
+                        class="mt-1 text-xs text-black/70">
+                        —
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const preview = document.getElementById("color-preview")!;
+        const picker = document.getElementById(
+            "color-picker",
+        ) as HTMLInputElement;
+        const rSlider = document.getElementById("r-slider") as HTMLInputElement;
+        const gSlider = document.getElementById("g-slider") as HTMLInputElement;
+        const bSlider = document.getElementById("b-slider") as HTMLInputElement;
+        const aSlider = document.getElementById("a-slider") as HTMLInputElement;
+        const rVal = document.getElementById("r-val")!;
+        const gVal = document.getElementById("g-val")!;
+        const bVal = document.getElementById("b-val")!;
+        const aVal = document.getElementById("a-val")!;
+        const hexInput = document.getElementById(
+            "hex-value",
+        ) as HTMLInputElement;
+        const rgbInput = document.getElementById(
+            "rgb-value",
+        ) as HTMLInputElement;
+        const hslInput = document.getElementById(
+            "hsl-value",
+        ) as HTMLInputElement;
+        const oklchInput = document.getElementById(
+            "oklch-value",
+        ) as HTMLInputElement;
+        const palette = document.getElementById("palette")!;
+        const contrastWhite = document.getElementById("contrast-white-ratio")!;
+        const contrastBlack = document.getElementById("contrast-black-ratio")!;
+        const contrastWhiteEl = document.getElementById("contrast-white")!;
+        const contrastBlackEl = document.getElementById("contrast-black")!;
+
+        function toHex(r: number, g: number, b: number) {
+            return (
+                "#" +
+                [r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("")
+            );
+        }
+        function rgbToHsl(r: number, g: number, b: number) {
+            r /= 255;
+            g /= 255;
+            b /= 255;
+            const mx = Math.max(r, g, b),
+                mn = Math.min(r, g, b);
+            let h = 0,
+                s = 0;
+            const l = (mx + mn) / 2;
+            if (mx !== mn) {
+                const d = mx - mn;
+                s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+                switch (mx) {
+                    case r:
+                        h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+                        break;
+                    case g:
+                        h = ((b - r) / d + 2) / 6;
+                        break;
+                    case b:
+                        h = ((r - g) / d + 4) / 6;
+                        break;
+                }
+            }
+            return [
+                Math.round(h * 360),
+                Math.round(s * 100),
+                Math.round(l * 100),
+            ];
+        }
+
+        function luminance(r: number, g: number, b: number) {
+            const a = [r, g, b].map((v) => {
+                v /= 255;
+                return v <= 0.03928
+                    ? v / 12.92
+                    : Math.pow((v + 0.055) / 1.055, 2.4);
+            });
+            return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+        }
+        function contrast(l1: number, l2: number) {
+            const lighter = Math.max(l1, l2),
+                darker = Math.min(l1, l2);
+            return (lighter + 0.05) / (darker + 0.05);
+        }
+
+        function ratingLabel(ratio: number) {
+            if (ratio >= 7) return "AAA ✓";
+            if (ratio >= 4.5) return "AA ✓";
+            if (ratio >= 3) return "AA grande ✓";
+            return "Falla ✗";
+        }
+
+        function srgbToLinear(c: number) {
+            return c <= 0.04045
+                ? c / 12.92
+                : Math.pow((c + 0.055) / 1.055, 2.4);
+        }
+        function rgbToOklch(r: number, g: number, b: number) {
+            const lr = srgbToLinear(r / 255),
+                lg = srgbToLinear(g / 255),
+                lb = srgbToLinear(b / 255);
+            const l_ =
+                0.4122214708 * lr + 0.5363325363 * lg + 0.0514459929 * lb;
+            const m_ =
+                0.2119034982 * lr + 0.6806995451 * lg + 0.1073969566 * lb;
+            const s_ =
+                0.0883024619 * lr + 0.2817188376 * lg + 0.6299787005 * lb;
+            const l = Math.cbrt(l_),
+                m = Math.cbrt(m_),
+                s = Math.cbrt(s_);
+            const L = 0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s;
+            const a_ = 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s;
+            const b_ = 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s;
+            const C = Math.sqrt(a_ * a_ + b_ * b_);
+            let H = (Math.atan2(b_, a_) * 180) / Math.PI;
+            if (H < 0) H += 360;
+            return [
+                parseFloat(L.toFixed(4)),
+                parseFloat(C.toFixed(4)),
+                Math.round(H),
+            ];
+        }
+
+        function update(r: number, g: number, b: number, fromSliders = false) {
+            const hex = toHex(r, g, b);
+            const alpha = parseInt(aSlider.value) / 100;
+            const [h, s, l] = rgbToHsl(r, g, b);
+            const [oL, oC, oH] = rgbToOklch(r, g, b);
+
+            preview.style.backgroundColor =
+                alpha < 1 ? `rgba(${r},${g},${b},${alpha})` : hex;
+            if (!fromSliders) {
+                rSlider.value = String(r);
+                gSlider.value = String(g);
+                bSlider.value = String(b);
+            }
+            rVal.textContent = String(r);
+            gVal.textContent = String(g);
+            bVal.textContent = String(b);
+            aVal.textContent = alpha.toFixed(2);
+            picker.value = hex;
+            hexInput.value =
+                alpha < 1
+                    ? hex +
+                      Math.round(alpha * 255)
+                          .toString(16)
+                          .padStart(2, "0")
+                    : hex;
+            rgbInput.value =
+                alpha < 1
+                    ? `rgba(${r}, ${g}, ${b}, ${alpha})`
+                    : `rgb(${r}, ${g}, ${b})`;
+            hslInput.value =
+                alpha < 1
+                    ? `hsla(${h}, ${s}%, ${l}%, ${alpha})`
+                    : `hsl(${h}, ${s}%, ${l}%)`;
+            oklchInput.value = `oklch(${oL} ${oC} ${oH})`;
+
+            // Palette
+            palette.innerHTML = Array.from({ length: 10 }, (_, i) => {
+                const factor = (i - 4) / 6;
+                const pr = Math.max(
+                    0,
+                    Math.min(
+                        255,
+                        Math.round(
+                            r + (factor > 0 ? (255 - r) * factor : r * factor),
+                        ),
+                    ),
+                );
+                const pg = Math.max(
+                    0,
+                    Math.min(
+                        255,
+                        Math.round(
+                            g + (factor > 0 ? (255 - g) * factor : g * factor),
+                        ),
+                    ),
+                );
+                const pb = Math.max(
+                    0,
+                    Math.min(
+                        255,
+                        Math.round(
+                            b + (factor > 0 ? (255 - b) * factor : b * factor),
+                        ),
+                    ),
+                );
+                const c = toHex(pr, pg, pb);
+                return `<div class="group/p cursor-pointer rounded-lg aspect-square transition-transform hover:scale-110" style="background:${c}" title="${c}" data-hex="${c}"><div class="opacity-0 group-hover/p:opacity-100 flex h-full items-end justify-center pb-1 transition-opacity"><span class="text-[9px] font-mono text-white drop-shadow-lg">${c}</span></div></div>`;
+            }).join("");
+            palette.querySelectorAll("[data-hex]").forEach((el) =>
+                el.addEventListener("click", () => {
+                    navigator.clipboard.writeText(
+                        (el as HTMLElement).dataset.hex || "",
+                    );
+                }),
+            );
+
+            // Contrast
+            const lum = luminance(r, g, b);
+            const cw = contrast(lum, 1);
+            const cb = contrast(lum, 0);
+            contrastWhite.textContent = `${cw.toFixed(2)}:1 — ${ratingLabel(cw)}`;
+            contrastBlack.textContent = `${cb.toFixed(2)}:1 — ${ratingLabel(cb)}`;
+            contrastWhiteEl.style.backgroundColor = hex;
+            contrastBlackEl.style.backgroundColor = hex;
+        }
+
+        function parseHex(hex: string) {
+            hex = hex.replace("#", "");
+            if (hex.length === 3)
+                hex = hex
+                    .split("")
+                    .map((c) => c + c)
+                    .join("");
+            const n = parseInt(hex.slice(0, 6), 16);
+            return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+        }
+
+        picker.addEventListener("input", () => {
+            const [r, g, b] = parseHex(picker.value);
+            update(r, g, b);
+        });
+        [rSlider, gSlider, bSlider, aSlider].forEach((s) =>
+            s.addEventListener("input", () => {
+                update(
+                    parseInt(rSlider.value),
+                    parseInt(gSlider.value),
+                    parseInt(bSlider.value),
+                    true,
+                );
+            }),
+        );
+
+        hexInput.addEventListener("change", () => {
+            try {
+                const [r, g, b] = parseHex(hexInput.value);
+                update(r, g, b);
+            } catch (e) {}
+        });
+        rgbInput.addEventListener("change", () => {
+            const m = rgbInput.value.match(/(\d+)/g);
+            if (m && m.length >= 3)
+                update(parseInt(m[0]), parseInt(m[1]), parseInt(m[2]));
+        });
+
+        // Copy buttons
+        document.querySelectorAll(".copy-btn").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+                const id = (btn as HTMLElement).dataset.copyTarget!;
+                const val = (document.getElementById(id) as HTMLInputElement)
+                    .value;
+                await navigator.clipboard.writeText(val);
+                btn.textContent = "✓";
+                setTimeout(() => {
+                    btn.textContent = "Copiar";
+                }, 1e3);
+            });
+        });
+
+        update(249, 115, 22);
+    </script>
+</ToolLayout>

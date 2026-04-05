@@ -1,0 +1,352 @@
+---
+import ToolLayout from "@layouts/ToolLayout.astro";
+---
+
+<ToolLayout
+    title="Regex Tester"
+    description="Prueba expresiones regulares en tiempo real con resaltado de coincidencias y referencias rápidas."
+    icon="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m5.231 13.481L15 17.25m-4.5-15H5.625c-.621 0-1.125.504-1.125 1.125v16.5c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9zm3.75 11.625a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z">
+    <div class="space-y-4">
+        <!-- Regex input -->
+        <div class="rounded-2xl border border-white/6 bg-white/3 p-5">
+            <label class="mb-2 block text-xs font-medium text-white/40"
+                >Expresión regular</label
+            >
+            <div class="flex items-center gap-2">
+                <span class="font-mono text-lg text-orange-400/60">/</span>
+                <input
+                    id="regex-input"
+                    type="text"
+                    value="(\\w+)@(\\w+)\\.(\\w+)"
+                    class="flex-1 bg-transparent font-mono text-sm text-orange-300 placeholder-white/20 outline-none"
+                    placeholder="tu regex aquí..."
+                    spellcheck="false"
+                />
+                <span class="font-mono text-lg text-orange-400/60">/</span>
+                <input
+                    id="regex-flags"
+                    type="text"
+                    value="gm"
+                    class="w-16 bg-transparent font-mono text-sm text-orange-300 placeholder-white/20 outline-none"
+                    placeholder="flags"
+                    spellcheck="false"
+                />
+            </div>
+            <!-- Flags shortcuts -->
+            <div class="mt-3 flex flex-wrap gap-1.5">
+                <button
+                    data-flag="g"
+                    class="flag-btn active rounded-md border border-orange-500/20 bg-orange-500/10 px-2.5 py-1 font-mono text-[10px] text-orange-400"
+                    >g <span class="text-white/30">global</span></button
+                >
+                <button
+                    data-flag="m"
+                    class="flag-btn active rounded-md border border-orange-500/20 bg-orange-500/10 px-2.5 py-1 font-mono text-[10px] text-orange-400"
+                    >m <span class="text-white/30">multiline</span></button
+                >
+                <button
+                    data-flag="i"
+                    class="flag-btn rounded-md border border-white/10 bg-white/5 px-2.5 py-1 font-mono text-[10px] text-white/40"
+                    >i <span class="text-white/20">insensitive</span></button
+                >
+                <button
+                    data-flag="s"
+                    class="flag-btn rounded-md border border-white/10 bg-white/5 px-2.5 py-1 font-mono text-[10px] text-white/40"
+                    >s <span class="text-white/20">dotAll</span></button
+                >
+                <button
+                    data-flag="u"
+                    class="flag-btn rounded-md border border-white/10 bg-white/5 px-2.5 py-1 font-mono text-[10px] text-white/40"
+                    >u <span class="text-white/20">unicode</span></button
+                >
+            </div>
+        </div>
+
+        <!-- Error -->
+        <div
+            id="regex-error"
+            class="hidden rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-2.5 text-xs font-medium text-red-400">
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-3 gap-3">
+            <div
+                class="rounded-xl border border-white/6 bg-white/3 px-4 py-3 text-center">
+                <span
+                    class="block font-mono text-lg font-bold text-orange-400"
+                    id="match-count">0</span
+                >
+                <span class="text-[10px] text-white/30">Coincidencias</span>
+            </div>
+            <div
+                class="rounded-xl border border-white/6 bg-white/3 px-4 py-3 text-center">
+                <span
+                    class="block font-mono text-lg font-bold text-white/60"
+                    id="group-count">0</span
+                >
+                <span class="text-[10px] text-white/30">Grupos</span>
+            </div>
+            <div
+                class="rounded-xl border border-white/6 bg-white/3 px-4 py-3 text-center">
+                <span
+                    class="block font-mono text-lg font-bold text-white/60"
+                    id="exec-time">0ms</span
+                >
+                <span class="text-[10px] text-white/30">Tiempo</span>
+            </div>
+        </div>
+
+        <!-- Test string -->
+        <div class="rounded-2xl border border-white/6 bg-white/3 p-1">
+            <div class="px-4 py-2">
+                <span
+                    class="text-[11px] font-medium tracking-wide text-white/30 uppercase"
+                    >Texto de prueba</span
+                >
+            </div>
+            <textarea
+                id="test-input"
+                class="bg-surface-700 h-40 w-full resize-none rounded-xl p-4 font-mono text-sm leading-relaxed text-white/80 placeholder-white/20 outline-none"
+                spellcheck="false"
+                >user@example.com admin@domain.org test.user@company.co.uk
+                no-match-here another@test.com</textarea
+            >
+        </div>
+
+        <!-- Highlighted result -->
+        <div class="rounded-2xl border border-white/6 bg-white/3 p-1">
+            <div class="px-4 py-2">
+                <span
+                    class="text-[11px] font-medium tracking-wide text-white/30 uppercase"
+                    >Resultado con resaltado</span
+                >
+            </div>
+            <div
+                id="highlight-output"
+                class="bg-surface-700 min-h-40 rounded-xl p-4 font-mono text-sm leading-relaxed wrap-break-word whitespace-pre-wrap text-white/60">
+            </div>
+        </div>
+
+        <!-- Matches detail -->
+        <div
+            id="matches-detail"
+            class="rounded-2xl border border-white/6 bg-white/3 p-5">
+            <h3
+                class="mb-3 text-xs font-semibold tracking-wide text-white/50 uppercase">
+                Detalle de coincidencias
+            </h3>
+            <div id="matches-list" class="space-y-2 text-xs text-white/40">
+                Escribe una regex para ver los resultados
+            </div>
+        </div>
+
+        <!-- Quick reference -->
+        <details class="rounded-2xl border border-white/6 bg-white/3">
+            <summary
+                class="cursor-pointer px-5 py-4 text-xs font-semibold tracking-wide text-white/50 uppercase hover:text-white/70"
+                >Referencia rápida</summary
+            >
+            <div
+                class="grid grid-cols-2 gap-x-6 gap-y-1 border-t border-white/5 px-5 py-4 sm:grid-cols-3">
+                <div class="flex justify-between py-1">
+                    <code class="font-mono text-orange-300">.</code><span
+                        class="text-[11px] text-white/30"
+                        >Cualquier carácter</span
+                    >
+                </div>
+                <div class="flex justify-between py-1">
+                    <code class="font-mono text-orange-300">\d</code><span
+                        class="text-[11px] text-white/30">Dígito</span
+                    >
+                </div>
+                <div class="flex justify-between py-1">
+                    <code class="font-mono text-orange-300">\w</code><span
+                        class="text-[11px] text-white/30">Alfanumérico</span
+                    >
+                </div>
+                <div class="flex justify-between py-1">
+                    <code class="font-mono text-orange-300">\s</code><span
+                        class="text-[11px] text-white/30">Espacio</span
+                    >
+                </div>
+                <div class="flex justify-between py-1">
+                    <code class="font-mono text-orange-300">^</code><span
+                        class="text-[11px] text-white/30">Inicio</span
+                    >
+                </div>
+                <div class="flex justify-between py-1">
+                    <code class="font-mono text-orange-300">$</code><span
+                        class="text-[11px] text-white/30">Fin</span
+                    >
+                </div>
+                <div class="flex justify-between py-1">
+                    <code class="font-mono text-orange-300">*</code><span
+                        class="text-[11px] text-white/30">0 o más</span
+                    >
+                </div>
+                <div class="flex justify-between py-1">
+                    <code class="font-mono text-orange-300">+</code><span
+                        class="text-[11px] text-white/30">1 o más</span
+                    >
+                </div>
+                <div class="flex justify-between py-1">
+                    <code class="font-mono text-orange-300">?</code><span
+                        class="text-[11px] text-white/30">0 o 1</span
+                    >
+                </div>
+                <div class="flex justify-between py-1">
+                    <code class="font-mono text-orange-300">{`{n}`}</code><span
+                        class="text-[11px] text-white/30">Exactamente n</span
+                    >
+                </div>
+                <div class="flex justify-between py-1">
+                    <code class="font-mono text-orange-300">[abc]</code><span
+                        class="text-[11px] text-white/30">Conjunto</span
+                    >
+                </div>
+                <div class="flex justify-between py-1">
+                    <code class="font-mono text-orange-300">(x)</code><span
+                        class="text-[11px] text-white/30">Grupo</span
+                    >
+                </div>
+            </div>
+        </details>
+    </div>
+
+    <script>
+        const regexInput = document.getElementById(
+            "regex-input",
+        ) as HTMLInputElement;
+        const flagsInput = document.getElementById(
+            "regex-flags",
+        ) as HTMLInputElement;
+        const testInput = document.getElementById(
+            "test-input",
+        ) as HTMLTextAreaElement;
+        const highlightOutput = document.getElementById("highlight-output")!;
+        const matchCount = document.getElementById("match-count")!;
+        const groupCount = document.getElementById("group-count")!;
+        const execTime = document.getElementById("exec-time")!;
+        const errorEl = document.getElementById("regex-error")!;
+        const matchesList = document.getElementById("matches-list")!;
+        const flagBtns = document.querySelectorAll(".flag-btn");
+
+        function escapeHtml(s: string) {
+            return s
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+        }
+
+        flagBtns.forEach((btn) => {
+            btn.addEventListener("click", () => {
+                const flag = (btn as HTMLElement).dataset.flag!;
+                let flags = flagsInput.value;
+                if (flags.includes(flag)) {
+                    flags = flags.replace(flag, "");
+                    btn.className =
+                        "flag-btn rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-mono text-white/40";
+                } else {
+                    flags += flag;
+                    btn.className =
+                        "flag-btn active rounded-md border border-orange-500/20 bg-orange-500/10 px-2.5 py-1 text-[10px] font-mono text-orange-400";
+                }
+                flagsInput.value = flags;
+                run();
+            });
+        });
+
+        function run() {
+            const pattern = regexInput.value;
+            const flags = flagsInput.value;
+            const text = testInput.value;
+
+            if (!pattern) {
+                highlightOutput.textContent = text;
+                matchCount.textContent = "0";
+                groupCount.textContent = "0";
+                execTime.textContent = "0ms";
+                errorEl.classList.add("hidden");
+                matchesList.textContent =
+                    "Escribe una regex para ver los resultados";
+                return;
+            }
+
+            try {
+                const regex = new RegExp(pattern, flags);
+                errorEl.classList.add("hidden");
+
+                const t0 = performance.now();
+                const matches: RegExpExecArray[] = [];
+                let m: RegExpExecArray | null;
+                const testRegex = new RegExp(
+                    pattern,
+                    flags.includes("g") ? flags : flags + "g",
+                );
+                while ((m = testRegex.exec(text)) !== null) {
+                    const clone = [...m] as RegExpExecArray;
+                    clone.index = m.index;
+                    clone.input = m.input;
+                    matches.push(clone);
+                    if (!flags.includes("g")) break;
+                }
+                const dt = performance.now() - t0;
+
+                matchCount.textContent = String(matches.length);
+                groupCount.textContent = String(
+                    matches.length > 0 ? Math.max(0, matches[0].length - 1) : 0,
+                );
+                execTime.textContent = dt < 1 ? "<1ms" : dt.toFixed(1) + "ms";
+
+                // Highlight
+                let html = "";
+                let lastIndex = 0;
+                const globalRegex = new RegExp(
+                    pattern,
+                    flags.includes("g") ? flags : flags + "g",
+                );
+                let match;
+                while ((match = globalRegex.exec(text)) !== null) {
+                    html += escapeHtml(text.slice(lastIndex, match.index));
+                    html += `<mark class="rounded bg-orange-500/25 text-orange-300 px-0.5">${escapeHtml(match[0])}</mark>`;
+                    lastIndex = match.index + match[0].length;
+                    if (!flags.includes("g")) break;
+                }
+                html += escapeHtml(text.slice(lastIndex));
+                highlightOutput.innerHTML = html || escapeHtml(text);
+
+                // Detail
+                if (matches.length === 0) {
+                    matchesList.innerHTML =
+                        '<p class="text-white/20 italic">Sin coincidencias</p>';
+                } else {
+                    matchesList.innerHTML = matches
+                        .slice(0, 50)
+                        .map((m, i) => {
+                            let groups = "";
+                            for (let g = 1; g < m.length; g++) {
+                                groups += `<span class="ml-3 text-white/20">Grupo ${g}:</span> <span class="text-white/50 font-mono">${escapeHtml(m[g] || "")}</span> `;
+                            }
+                            return `<div class="rounded-lg bg-white/[0.03] px-3 py-2 border border-white/5">
+              <span class="text-orange-400/60">#${i + 1}</span>
+              <span class="text-white/30 ml-1">pos ${m.index}:</span>
+              <span class="font-mono text-orange-300 ml-1">${escapeHtml(m[0])}</span>
+              ${groups ? `<div class="mt-1">${groups}</div>` : ""}
+            </div>`;
+                        })
+                        .join("");
+                }
+            } catch (e: any) {
+                errorEl.classList.remove("hidden");
+                errorEl.textContent = `✗ ${e.message}`;
+                highlightOutput.textContent = text;
+                matchCount.textContent = "0";
+            }
+        }
+
+        regexInput.addEventListener("input", run);
+        flagsInput.addEventListener("input", run);
+        testInput.addEventListener("input", run);
+        run();
+    </script>
+</ToolLayout>

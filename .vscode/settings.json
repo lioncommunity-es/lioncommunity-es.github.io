@@ -1,0 +1,7 @@
+{
+  "astro.languageServer.runtime": "pnpm",
+  "astro.languageServer.runtimeArgs": ["run", "astro"],
+  "files.associations": {
+    "**/styles/global.css": "tailwindcss"
+  }
+}

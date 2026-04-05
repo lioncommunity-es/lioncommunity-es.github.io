@@ -1,0 +1,237 @@
+---
+import ToolLayout from "@layouts/ToolLayout.astro";
+---
+
+<ToolLayout
+    title="Generador de UUID"
+    description="Genera identificadores únicos universales (v4) con un solo clic. Copia múltiples a la vez."
+    icon="M7.864 4.243A7.5 7.5 0 0119.5 10.5c0 2.92-.556 5.709-1.568 8.268M5.742 6.364A7.465 7.465 0 004.5 10.5a7.464 7.464 0 01-1.15 3.993m1.989 3.559A11.209 11.209 0 008.25 10.5a3.75 3.75 0 117.5 0c0 .527-.021 1.049-.064 1.565M12 10.5a14.94 14.94 0 01-3.6 9.75">
+    <!-- Main UUID -->
+    <div class="space-y-6">
+        <div class="rounded-2xl border border-white/6 bg-white/3 p-6">
+            <label class="mb-2 block text-xs font-medium text-white/40"
+                >UUID v4</label
+            >
+            <div
+                id="uuid-display"
+                class="bg-surface-700 rounded-xl border border-white/10 px-4 py-3.5 text-center font-mono text-xl tracking-widest text-orange-300 select-all sm:text-2xl">
+                —
+            </div>
+            <div class="mt-4 flex flex-wrap gap-2">
+                <button
+                    id="gen-btn"
+                    class="rounded-lg bg-orange-500 px-5 py-2.5 text-xs font-medium text-white shadow-lg shadow-orange-500/20 transition-all hover:bg-orange-600 active:scale-95"
+                    >Generar nuevo</button
+                >
+                <button
+                    id="copy-btn"
+                    class="rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-medium text-white/50 transition-all hover:border-orange-500/30 hover:bg-orange-500/10 hover:text-orange-400"
+                    >Copiar</button
+                >
+                <button
+                    id="copy-no-dash"
+                    class="rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-medium text-white/50 transition-all hover:border-orange-500/30 hover:bg-orange-500/10 hover:text-orange-400"
+                    >Sin guiones</button
+                >
+                <button
+                    id="copy-upper"
+                    class="rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-medium text-white/50 transition-all hover:border-orange-500/30 hover:bg-orange-500/10 hover:text-orange-400"
+                    >MAYÚSCULAS</button
+                >
+            </div>
+        </div>
+
+        <!-- Batch -->
+        <div class="rounded-2xl border border-white/6 bg-white/3 p-6">
+            <h3
+                class="mb-4 text-xs font-semibold tracking-wide text-white/50 uppercase">
+                Generar lote
+            </h3>
+            <div class="mb-4 flex flex-wrap items-end gap-4">
+                <div>
+                    <label class="mb-1.5 block text-xs text-white/40"
+                        >Cantidad</label
+                    >
+                    <input
+                        id="batch-count"
+                        type="number"
+                        min="1"
+                        max="500"
+                        value="10"
+                        class="bg-surface-600 w-24 rounded-lg border border-white/10 px-3 py-2 font-mono text-sm text-white outline-none focus:border-orange-500/40"
+                    />
+                </div>
+                <div>
+                    <label class="mb-1.5 block text-xs text-white/40"
+                        >Formato</label
+                    >
+                    <select
+                        id="batch-format"
+                        class="bg-surface-600 rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60 outline-none">
+                        <option value="standard">Estándar</option><option
+                            value="no-dash">Sin guiones</option
+                        ><option value="upper">MAYÚSCULAS</option>
+                    </select>
+                </div>
+                <button
+                    id="batch-gen-btn"
+                    class="rounded-lg bg-orange-500 px-5 py-2 text-xs font-medium text-white shadow-lg shadow-orange-500/20 transition-all hover:bg-orange-600 active:scale-95"
+                    >Generar lote</button
+                >
+            </div>
+            <div id="batch-result" class="hidden">
+                <div class="mb-2 flex items-center justify-between">
+                    <span id="batch-label" class="text-[11px] text-white/30"
+                    ></span>
+                    <button
+                        id="copy-batch"
+                        class="text-[11px] text-orange-400/70 hover:text-orange-400"
+                        >Copiar todo</button
+                    >
+                </div>
+                <pre
+                    id="batch-list"
+                    class="bg-surface-700 max-h-72 overflow-y-auto rounded-xl p-4 font-mono text-xs leading-relaxed text-white/60">
+                </pre>
+            </div>
+        </div>
+
+        <!-- History -->
+        <div class="rounded-2xl border border-white/6 bg-white/3 p-6">
+            <div class="mb-4 flex items-center justify-between">
+                <h3
+                    class="text-xs font-semibold tracking-wide text-white/50 uppercase">
+                    Historial
+                </h3>
+                <button
+                    id="clear-history"
+                    class="text-[11px] text-white/20 hover:text-red-400"
+                    >Limpiar</button
+                >
+            </div>
+            <div id="history-list" class="space-y-1">
+                <p class="text-xs text-white/20 italic">Vacío</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function genUUID() {
+            const b = new Uint8Array(16);
+            crypto.getRandomValues(b);
+            b[6] = (b[6] & 0x0f) | 0x40;
+            b[8] = (b[8] & 0x3f) | 0x80;
+            const h = Array.from(b)
+                .map((x) => x.toString(16).padStart(2, "0"))
+                .join("");
+            return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+        }
+        function fmt(u: string, f: string) {
+            if (f === "no-dash") return u.replace(/-/g, "");
+            if (f === "upper") return u.toUpperCase();
+            return u;
+        }
+        const d = document.getElementById("uuid-display")!,
+            hist: string[] = [];
+        function flash(b: HTMLElement, t: string) {
+            b.textContent = "¡Copiado!";
+            setTimeout(() => {
+                b.textContent = t;
+            }, 1200);
+        }
+        function addHist(u: string) {
+            hist.unshift(u);
+            if (hist.length > 20) hist.pop();
+            const el = document.getElementById("history-list")!;
+            el.innerHTML = hist
+                .map(
+                    (x) =>
+                        `<div class="group flex items-center justify-between rounded-lg px-3 py-1 hover:bg-white/5"><span class="font-mono text-xs text-white/40">${x}</span><button data-c="${x}" class="opacity-0 group-hover:opacity-100 text-[11px] text-orange-400/60 hover:text-orange-400">Copiar</button></div>`,
+                )
+                .join("");
+            el.querySelectorAll("[data-c]").forEach((b) =>
+                b.addEventListener("click", async () => {
+                    await navigator.clipboard.writeText(
+                        (b as HTMLElement).dataset.c || "",
+                    );
+                    b.textContent = "✓";
+                    setTimeout(() => {
+                        b.textContent = "Copiar";
+                    }, 1e3);
+                }),
+            );
+        }
+        function go() {
+            const u = genUUID();
+            d.textContent = u;
+            addHist(u);
+        }
+        document.getElementById("gen-btn")!.addEventListener("click", go);
+        document
+            .getElementById("copy-btn")!
+            .addEventListener("click", async () => {
+                await navigator.clipboard.writeText(d.textContent || "");
+                flash(document.getElementById("copy-btn")!, "Copiar");
+            });
+        document
+            .getElementById("copy-no-dash")!
+            .addEventListener("click", async () => {
+                await navigator.clipboard.writeText(
+                    (d.textContent || "").replace(/-/g, ""),
+                );
+                flash(document.getElementById("copy-no-dash")!, "Sin guiones");
+            });
+        document
+            .getElementById("copy-upper")!
+            .addEventListener("click", async () => {
+                await navigator.clipboard.writeText(
+                    (d.textContent || "").toUpperCase(),
+                );
+                flash(document.getElementById("copy-upper")!, "MAYÚSCULAS");
+            });
+        document
+            .getElementById("batch-gen-btn")!
+            .addEventListener("click", () => {
+                const n = Math.min(
+                    500,
+                    Math.max(
+                        1,
+                        parseInt(
+                            (
+                                document.getElementById(
+                                    "batch-count",
+                                ) as HTMLInputElement
+                            ).value,
+                        ) || 10,
+                    ),
+                );
+                const f = (
+                    document.getElementById("batch-format") as HTMLSelectElement
+                ).value;
+                const ids = Array.from({ length: n }, () => fmt(genUUID(), f));
+                document.getElementById("batch-list")!.textContent =
+                    ids.join("\n");
+                document.getElementById("batch-label")!.textContent =
+                    `${n} UUIDs`;
+                document
+                    .getElementById("batch-result")!
+                    .classList.remove("hidden");
+            });
+        document
+            .getElementById("copy-batch")!
+            .addEventListener("click", async () => {
+                await navigator.clipboard.writeText(
+                    document.getElementById("batch-list")!.textContent || "",
+                );
+                flash(document.getElementById("copy-batch")!, "Copiar todo");
+            });
+        document
+            .getElementById("clear-history")!
+            .addEventListener("click", () => {
+                hist.length = 0;
+                document.getElementById("history-list")!.innerHTML =
+                    '<p class="text-xs text-white/20 italic">Vacío</p>';
+            });
+        go();
+    </script>
+</ToolLayout>

@@ -1,0 +1,315 @@
+---
+import ToolLayout from "@layouts/ToolLayout.astro";
+---
+
+<ToolLayout
+    title="Conversor Base64"
+    description="Codifica y decodifica texto y archivos a/desde Base64 de forma rápida y sencilla."
+    icon="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5">
+    <div class="space-y-4">
+        <!-- Mode toggle -->
+        <div
+            class="flex items-center gap-1 rounded-xl border border-white/6 bg-white/3 p-1">
+            <button
+                id="mode-encode"
+                class="flex-1 rounded-lg border border-orange-500/20 bg-orange-500/15 py-2.5 text-xs font-medium text-orange-400 transition-all"
+                data-active="true">
+                Codificar → Base64
+            </button>
+            <button
+                id="mode-decode"
+                class="flex-1 rounded-lg border border-transparent py-2.5 text-xs font-medium text-white/40 transition-all hover:text-white/60"
+                data-active="false">
+                Decodificar ← Base64
+            </button>
+        </div>
+
+        <!-- Input -->
+        <div class="rounded-2xl border border-white/6 bg-white/3 p-1">
+            <div class="flex items-center justify-between px-4 py-2">
+                <span
+                    id="input-label"
+                    class="text-[11px] font-medium tracking-wide text-white/30 uppercase"
+                    >Texto original</span
+                >
+                <span
+                    id="input-size"
+                    class="font-mono text-[10px] text-white/20">0 bytes</span
+                >
+            </div>
+            <textarea
+                id="b64-input"
+                class="bg-surface-700 h-48 w-full resize-none rounded-xl p-4 font-mono text-sm leading-relaxed text-white/80 placeholder-white/20 outline-none"
+                placeholder="Escribe o pega tu texto aquí..."
+                spellcheck="false"></textarea>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="flex flex-wrap items-center gap-2">
+            <button
+                id="convert-btn"
+                class="rounded-lg bg-orange-500 px-5 py-2.5 text-xs font-medium text-white shadow-lg shadow-orange-500/20 transition-all hover:bg-orange-600 active:scale-95">
+                Convertir
+            </button>
+            <button
+                id="swap-btn"
+                class="rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-medium text-white/50 transition-all hover:border-orange-500/30 hover:bg-orange-500/10 hover:text-orange-400"
+                title="Intercambiar entrada y salida">
+                <svg
+                    class="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2">
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"
+                    ></path>
+                </svg>
+            </button>
+            <div class="flex-1"></div>
+
+            <!-- File upload -->
+            <label
+                class="cursor-pointer rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-medium text-white/40 transition-all hover:border-orange-500/30 hover:bg-orange-500/10 hover:text-orange-400">
+                <span>Subir archivo</span>
+                <input id="file-input" type="file" class="hidden" />
+            </label>
+
+            <button
+                id="copy-output-btn"
+                class="rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-medium text-white/40 transition-all hover:border-orange-500/30 hover:bg-orange-500/10 hover:text-orange-400">
+                Copiar resultado
+            </button>
+        </div>
+
+        <!-- Status -->
+        <div
+            id="b64-status"
+            class="hidden rounded-xl border px-4 py-2.5 text-xs font-medium">
+        </div>
+
+        <!-- Output -->
+        <div class="rounded-2xl border border-white/6 bg-white/3 p-1">
+            <div class="flex items-center justify-between px-4 py-2">
+                <span
+                    id="output-label"
+                    class="text-[11px] font-medium tracking-wide text-white/30 uppercase"
+                    >Base64</span
+                >
+                <span
+                    id="output-size"
+                    class="font-mono text-[10px] text-white/20">0 bytes</span
+                >
+            </div>
+            <pre
+                id="b64-output"
+                class="bg-surface-700 h-48 w-full overflow-auto rounded-xl p-4 font-mono text-sm leading-relaxed break-all whitespace-pre-wrap text-orange-300/80">
+            </pre>
+        </div>
+
+        <!-- Info -->
+        <div class="rounded-2xl border border-white/6 bg-white/3 p-5">
+            <h3
+                class="mb-3 text-xs font-semibold tracking-wide text-white/50 uppercase">
+                Información
+            </h3>
+            <div class="grid gap-4 sm:grid-cols-3">
+                <div>
+                    <span class="text-[11px] text-white/30"
+                        >Tamaño original</span
+                    >
+                    <p
+                        id="stat-original"
+                        class="mt-0.5 font-mono text-sm text-white/60">
+                        —
+                    </p>
+                </div>
+                <div>
+                    <span class="text-[11px] text-white/30">Tamaño Base64</span>
+                    <p
+                        id="stat-encoded"
+                        class="mt-0.5 font-mono text-sm text-white/60">
+                        —
+                    </p>
+                </div>
+                <div>
+                    <span class="text-[11px] text-white/30">Incremento</span>
+                    <p
+                        id="stat-increase"
+                        class="mt-0.5 font-mono text-sm text-white/60">
+                        —
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const input = document.getElementById(
+            "b64-input",
+        ) as HTMLTextAreaElement;
+        const output = document.getElementById("b64-output")!;
+        const convertBtn = document.getElementById("convert-btn")!;
+        const swapBtn = document.getElementById("swap-btn")!;
+        const copyBtn = document.getElementById("copy-output-btn")!;
+        const fileInput = document.getElementById(
+            "file-input",
+        ) as HTMLInputElement;
+        const modeEncode = document.getElementById("mode-encode")!;
+        const modeDecode = document.getElementById("mode-decode")!;
+        const status = document.getElementById("b64-status")!;
+        const inputLabel = document.getElementById("input-label")!;
+        const outputLabel = document.getElementById("output-label")!;
+        const inputSize = document.getElementById("input-size")!;
+        const outputSize = document.getElementById("output-size")!;
+        const statOriginal = document.getElementById("stat-original")!;
+        const statEncoded = document.getElementById("stat-encoded")!;
+        const statIncrease = document.getElementById("stat-increase")!;
+
+        let isEncoding = true;
+
+        function formatBytes(bytes: number): string {
+            if (bytes < 1024) return bytes + " B";
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
+            return (bytes / 1048576).toFixed(2) + " MB";
+        }
+
+        function showStatus(msg: string, type: "success" | "error") {
+            status.classList.remove("hidden");
+            status.className =
+                "rounded-xl border px-4 py-2.5 text-xs font-medium";
+            if (type === "success")
+                status.classList.add(
+                    "border-green-500/20",
+                    "bg-green-500/5",
+                    "text-green-400",
+                );
+            else
+                status.classList.add(
+                    "border-red-500/20",
+                    "bg-red-500/5",
+                    "text-red-400",
+                );
+            status.textContent = msg;
+        }
+
+        function setMode(encode: boolean) {
+            isEncoding = encode;
+            modeEncode.dataset.active = String(encode);
+            modeDecode.dataset.active = String(!encode);
+
+            if (encode) {
+                modeEncode.className =
+                    "flex-1 rounded-lg py-2.5 text-xs font-medium transition-all bg-orange-500/15 text-orange-400 border border-orange-500/20";
+                modeDecode.className =
+                    "flex-1 rounded-lg py-2.5 text-xs font-medium transition-all text-white/40 hover:text-white/60 border border-transparent";
+                inputLabel.textContent = "Texto original";
+                outputLabel.textContent = "Base64";
+            } else {
+                modeDecode.className =
+                    "flex-1 rounded-lg py-2.5 text-xs font-medium transition-all bg-orange-500/15 text-orange-400 border border-orange-500/20";
+                modeEncode.className =
+                    "flex-1 rounded-lg py-2.5 text-xs font-medium transition-all text-white/40 hover:text-white/60 border border-transparent";
+                inputLabel.textContent = "Base64";
+                outputLabel.textContent = "Texto decodificado";
+            }
+        }
+
+        modeEncode.addEventListener("click", () => setMode(true));
+        modeDecode.addEventListener("click", () => setMode(false));
+
+        function convert() {
+            const text = input.value;
+            if (!text.trim()) {
+                output.textContent = "";
+                return;
+            }
+
+            try {
+                let result: string;
+                let origSize: number, encSize: number;
+
+                if (isEncoding) {
+                    result = btoa(unescape(encodeURIComponent(text)));
+                    origSize = new Blob([text]).size;
+                    encSize = result.length;
+                } else {
+                    result = decodeURIComponent(
+                        escape(atob(text.replace(/\s/g, ""))),
+                    );
+                    origSize = new Blob([result]).size;
+                    encSize = text.replace(/\s/g, "").length;
+                }
+
+                output.textContent = result;
+                outputSize.textContent = formatBytes(new Blob([result]).size);
+                inputSize.textContent = formatBytes(new Blob([text]).size);
+
+                statOriginal.textContent = formatBytes(origSize);
+                statEncoded.textContent = formatBytes(encSize);
+                const pct =
+                    origSize > 0
+                        ? (((encSize - origSize) / origSize) * 100).toFixed(1)
+                        : "0";
+                statIncrease.textContent = `${pct}%`;
+
+                showStatus("✓ Conversión exitosa", "success");
+            } catch (e: any) {
+                output.textContent = "";
+                showStatus(`✗ Error: ${e.message}`, "error");
+            }
+        }
+
+        convertBtn.addEventListener("click", convert);
+
+        input.addEventListener("input", () => {
+            inputSize.textContent = formatBytes(new Blob([input.value]).size);
+        });
+
+        swapBtn.addEventListener("click", () => {
+            const current = output.textContent || "";
+            input.value = current;
+            output.textContent = "";
+            setMode(!isEncoding);
+            inputSize.textContent = formatBytes(new Blob([current]).size);
+        });
+
+        copyBtn.addEventListener("click", async () => {
+            await navigator.clipboard.writeText(output.textContent || "");
+            copyBtn.textContent = "¡Copiado!";
+            setTimeout(() => {
+                copyBtn.textContent = "Copiar resultado";
+            }, 1500);
+        });
+
+        fileInput.addEventListener("change", () => {
+            const file = fileInput.files?.[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                const base64 = (reader.result as string).split(",")[1] || "";
+                if (isEncoding) {
+                    output.textContent = base64;
+                    outputSize.textContent = formatBytes(base64.length);
+                    statOriginal.textContent = formatBytes(file.size);
+                    statEncoded.textContent = formatBytes(base64.length);
+                    statIncrease.textContent =
+                        (
+                            ((base64.length - file.size) / file.size) *
+                            100
+                        ).toFixed(1) + "%";
+                    showStatus(
+                        `✓ Archivo "${file.name}" codificado`,
+                        "success",
+                    );
+                } else {
+                    input.value = base64;
+                    inputSize.textContent = formatBytes(base64.length);
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+    </script>
+</ToolLayout>

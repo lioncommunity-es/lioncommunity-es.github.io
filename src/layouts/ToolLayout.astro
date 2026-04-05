@@ -1,0 +1,77 @@
+---
+import Layout from "@layouts/Layout.astro";
+import Header from "@components/Header.astro";
+import Footer from "@components/Footer.astro";
+
+interface Props {
+    title: string;
+    description: string;
+    icon: string;
+    iconFill?: boolean;
+}
+
+const { title, description, icon, iconFill = false } = Astro.props;
+---
+
+<Layout title={`${title} — LionDev`} description={description}>
+    <Header />
+    <main class="min-h-screen pt-24 pb-16">
+        <div class="mx-auto max-w-7xl px-6">
+            <!-- Breadcrumb -->
+            <nav class="animate-fade-in mb-8 flex items-center gap-2 text-xs">
+                <a
+                    href="/"
+                    class="text-white/30 transition-colors hover:text-orange-400">
+                    Herramientas
+                </a>
+                <svg
+                    class="h-3 w-3 text-white/20"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2">
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M9 5l7 7-7 7"></path>
+                </svg>
+                <span class="text-white/60">{title}</span>
+            </nav>
+
+            <!-- Page header -->
+            <div class="animate-slide-up mb-10">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/10">
+                        <svg
+                          class="h-6 w-6 text-orange-400"
+                          fill={iconFill ? "currentColor" : "none"}
+                          viewBox="0 0 24 24"
+                          stroke={iconFill ? "none" : "currentColor"}
+                          stroke-width={iconFill ? "0" : "1.5"}>
+                          <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d={icon}></path>
+                      </svg>
+                    </div>
+                    <div>
+                        <h1
+                            class="text-xl font-bold tracking-tight text-white sm:text-2xl">
+                            {title}
+                        </h1>
+                        <p class="mt-0.5 text-sm text-white/40">
+                            {description}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tool content -->
+            <div class="animate-slide-up stagger-2">
+                <slot />
+            </div>
+        </div>
+    </main>
+    <Footer />
+</Layout>

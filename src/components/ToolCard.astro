@@ -1,0 +1,122 @@
+---
+/**
+ * ToolCard — A card linking to a dev tool subpage.
+ *
+ * Props:
+ *   title       – Tool name
+ *   description – Short description
+ *   href        – Link to the tool page
+ *   icon        – SVG path data for the card icon (heroicons style)
+ *   tag         – Optional tag label (e.g. "Nuevo", "Beta")
+ *   comingSoon  – If true, renders as disabled/coming-soon
+ */
+interface Props {
+  title: string;
+  description: string;
+  href: string;
+  icon: string;
+  iconFill?: boolean;
+  tag?: string;
+  comingSoon?: boolean;
+}
+
+const { title, description, href, icon, iconFill = false, tag, comingSoon = false } = Astro.props;
+---
+
+<a
+  href={comingSoon ? undefined : href}
+  class:list={[
+    "tool-card group relative flex flex-col rounded-2xl border p-6 transition-all duration-300",
+    comingSoon
+      ? "pointer-events-none cursor-default border-white/5 bg-white/2 opacity-50"
+      : "border-white/6 bg-white/3 hover:border-orange-500/20 hover:bg-white/6 hover:shadow-lg hover:shadow-orange-500/5",
+  ]}
+  data-tool-card
+  data-title={title.toLowerCase()}
+>
+  <!-- Tag badge -->
+  {
+    tag && (
+      <span class="absolute top-4 right-4 rounded-full bg-orange-500/15 px-2.5 py-0.5 text-[10px] font-semibold tracking-wider text-orange-400 uppercase">
+        {tag}
+      </span>
+    )
+  }
+
+  <!-- Icon -->
+  <div
+    class:list={[
+      "mb-4 flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-300",
+      comingSoon
+        ? "bg-white/5"
+        : "bg-orange-500/10 group-hover:bg-orange-500/15 group-hover:shadow-md group-hover:shadow-orange-500/10",
+    ]}
+  >
+    <svg
+      class:list={[
+        "h-5 w-5 transition-colors duration-300",
+        comingSoon
+          ? "text-white/30"
+          : "text-orange-400 group-hover:text-orange-300",
+      ]}
+      fill={iconFill ? "currentColor" : "none"}
+      viewBox="0 0 24 24"
+      stroke={iconFill ? "none" : "currentColor"}
+      stroke-width={iconFill ? "0" : "1.5"}
+    >
+      <path stroke-linecap="round" stroke-linejoin="round" d={icon}></path>
+    </svg>
+  </div>
+
+  <!-- Content -->
+  <h3
+    class:list={[
+      "text-sm font-semibold",
+      comingSoon ? "text-white/40" : "text-white/90 group-hover:text-white",
+    ]}
+  >
+    {title}
+  </h3>
+  <p
+    class:list={[
+      "mt-1.5 text-xs leading-relaxed",
+      comingSoon ? "text-white/20" : "text-white/40 group-hover:text-white/50",
+    ]}
+  >
+    {description}
+  </p>
+
+  <!-- Arrow indicator -->
+  {
+    !comingSoon && (
+      <div class="mt-auto flex items-center pt-5">
+        <span class="text-xs font-medium text-orange-400/0 transition-all duration-300 group-hover:text-orange-400/80">
+          Abrir herramienta
+        </span>
+        <svg
+          class="ml-1 h-3 w-3 -translate-x-2 text-orange-400 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-80"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
+          />
+        </svg>
+      </div>
+    )
+  }
+
+  {
+    comingSoon && (
+      <div class="mt-auto pt-5">
+        <span class="text-[10px] font-medium tracking-wider text-white/20 uppercase">
+          Próximamente
+        </span>
+      </div>
+    )
+  }
+</a>
