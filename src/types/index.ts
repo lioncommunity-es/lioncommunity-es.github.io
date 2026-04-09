@@ -23,7 +23,7 @@ export interface EmbedData {
   url: string;
   description: string;
   fields: EmbedField[];
-  footer: { text: string; iconUrl?: string };
+  footer?: { text?: string; iconUrl?: string };
   thumbnail: string;
   image: string;
   authorName: string;
@@ -53,15 +53,15 @@ export interface ActionRowData {
 export type MessageComponent = ActionRowData;
 
 export interface AuthorData {
-  name: string;
-  avatar: string;
-  bot: boolean;
-  verified: boolean;
+  name?: string;
+  avatar?: string;
+  bot?: boolean;
+  verified?: boolean;
   roleColor?: string;
 }
 
 export interface DiscordPreviewData {
-  author: AuthorData;
+  author?: AuthorData;
   content: string;
   embeds: EmbedData[];
   components: MessageComponent[];

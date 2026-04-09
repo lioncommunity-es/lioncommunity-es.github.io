@@ -181,7 +181,7 @@ export default function EmbedEditor({ embed, idx, onUpdate, onDelete }: Props) {
         <div className="flex-1">
           <Label>Footer</Label>
           <Input
-            value={embed.footer.text}
+            value={embed.footer?.text || ""}
             onChange={(v) =>
               onUpdate({ ...embed, footer: { ...embed.footer, text: v } })
             }

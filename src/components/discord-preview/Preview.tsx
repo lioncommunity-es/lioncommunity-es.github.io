@@ -43,11 +43,11 @@ export default function Preview({ data }: Props) {
   return (
     <DiscordMessages className="p-5">
       <DiscordMessage
-        author={author.name}
-        avatar={author.avatar}
-        bot={author.bot}
-        verified={author.verified}
-        roleColor={author.roleColor}
+        author={author?.name || "User"}
+        avatar={author?.avatar}
+        bot={author?.bot}
+        verified={author?.verified}
+        roleColor={author?.roleColor}
         ephemeral={ephemeral}
         edited={edited}
         timestamp={getSafeDate(timestamp)}
@@ -89,17 +89,17 @@ export default function Preview({ data }: Props) {
                   </DiscordEmbedFields>
                 )}
 
-                {(embed.footer.text || embed.showTimestamp) && (
+                {(embed.footer?.text || embed.showTimestamp) && (
                   <DiscordEmbedFooter
                     slot="footer"
-                    footerImage={embed.footer.iconUrl}
+                    footerImage={embed.footer?.iconUrl}
                     timestamp={
                       embed.showTimestamp
                         ? getSafeDate(embed.timestamp)
                         : undefined
                     }
                   >
-                    {embed.footer.text}
+                    {embed.footer?.text}
                   </DiscordEmbedFooter>
                 )}
               </DiscordEmbed>
@@ -118,7 +118,7 @@ export default function Preview({ data }: Props) {
                             ? "secondary"
                             : btn.style === "danger"
                               ? "destructive"
-                              : btn.style
+                              : btn.style || "primary"
                         }
                         url={btn.style === "link" ? btn.url : undefined}
                         disabled={btn.disabled}

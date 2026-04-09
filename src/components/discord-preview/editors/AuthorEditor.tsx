@@ -8,7 +8,14 @@ interface Props {
 
 export default function AuthorEditor({ author, onChange }: Props) {
   const update = (patch: Partial<AuthorData>) =>
-    onChange({ ...author, ...patch });
+    onChange({ 
+      name: "", 
+      avatar: "", 
+      bot: false, 
+      verified: false, 
+      ...author, 
+      ...patch 
+    });
 
   return (
     <EditorCard>
@@ -17,7 +24,7 @@ export default function AuthorEditor({ author, onChange }: Props) {
         <div>
           <Label>Nombre</Label>
           <Input
-            value={author.name}
+            value={author?.name || ""}
             onChange={(v) => update({ name: v })}
             placeholder="Nombre del bot"
           />
@@ -25,7 +32,7 @@ export default function AuthorEditor({ author, onChange }: Props) {
         <div>
           <Label>Avatar URL</Label>
           <Input
-            value={author.avatar}
+            value={author?.avatar || ""}
             onChange={(v) => update({ avatar: v })}
             placeholder="URL del avatar"
           />
@@ -34,12 +41,12 @@ export default function AuthorEditor({ author, onChange }: Props) {
       <div className="flex flex-wrap gap-4">
         <Toggle
           label="Bot"
-          checked={author.bot}
+          checked={author?.bot || false}
           onChange={(v) => update({ bot: v })}
         />
         <Toggle
           label="Verificado"
-          checked={author.verified}
+          checked={author?.verified || false}
           onChange={(v) => update({ verified: v })}
         />
       </div>
