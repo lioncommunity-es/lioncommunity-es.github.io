@@ -30,7 +30,10 @@ export const DEFAULT_DATA: DiscordPreviewData = {
         { name: "Online", value: "456", inline: true },
         { name: "Nivel", value: "⭐ 3", inline: true },
       ],
-      footer: { text: "Lion Community • Hoy a las 13:00" },
+      footer: {
+        text: "Lion Community",
+        iconUrl: "https://cdn.discordapp.com/embed/avatars/0.png",
+      },
       thumbnail: "",
       image: "",
       authorName: "",

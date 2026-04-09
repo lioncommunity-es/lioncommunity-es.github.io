@@ -37,6 +37,7 @@ export interface ButtonData {
   label: string;
   style: ButtonType;
   emoji: string;
+  animated?: boolean;
   url?: string;
   disabled?: boolean;
 }
@@ -65,6 +66,7 @@ export interface DiscordPreviewData {
   ephemeral: boolean;
   edited: boolean;
   timestamp?: string; // Optional message-level timestamp
+  flags?: number; // Message flags bitfield
 }
 
 // Export the official types for use in other components

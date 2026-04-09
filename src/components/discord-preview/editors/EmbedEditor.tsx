@@ -194,6 +194,30 @@ export default function EmbedEditor({ embed, idx, onUpdate, onDelete }: Props) {
           </label>
         </div>
       </div>
+      {embed.showTimestamp && (
+        <div>
+          <Label>Fecha y hora del timestamp</Label>
+          <input
+            type="datetime-local"
+            value={
+              embed.timestamp
+                ? embed.timestamp.slice(0, 16) // trim seconds for <input>
+                : new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
+                    .toISOString()
+                    .slice(0, 16)
+            }
+            onChange={(e) =>
+              onUpdate({
+                ...embed,
+                timestamp: e.target.value
+                  ? new Date(e.target.value).toISOString()
+                  : "",
+              })
+            }
+            className="w-full rounded-lg border border-white/10 bg-[#1e1f22] px-3 py-2 text-xs text-white/80 scheme-dark transition-colors outline-none focus:border-orange-500/40"
+          />
+        </div>
+      )}
 
       {/* Fields */}
       <div>
@@ -208,7 +232,7 @@ export default function EmbedEditor({ embed, idx, onUpdate, onDelete }: Props) {
             />
           ))}
           {embed.fields.length === 0 && (
-            <p className="text-[11px] italic text-white/20">Sin campos</p>
+            <p className="text-[11px] text-white/20 italic">Sin campos</p>
           )}
         </div>
       </div>

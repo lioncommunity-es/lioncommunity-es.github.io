@@ -231,6 +231,24 @@ function parseMarkdown(text: string): React.ReactNode[] {
   return parts;
 }
 
+/** Safely converts a potential date string to a Date object, fallback to now if invalid */
+function getSafeDate(dateStr: string | undefined | null | Date): Date {
+  if (!dateStr) return new Date();
+  if (dateStr instanceof Date) return isNaN(dateStr.getTime()) ? new Date() : dateStr;
+  const d = new Date(dateStr);
+  return isNaN(d.getTime()) ? new Date() : d;
+}
+
+/** Resolves an emoji string to a URL if it's a snowflake ID */
+function resolveEmoji(emoji: string | undefined) {
+  if (!emoji) return { url: undefined, name: undefined };
+  const isId = /^\d+$/.test(emoji);
+  return {
+    url: isId ? `https://cdn.discordapp.com/emojis/${emoji}.png` : undefined,
+    name: isId ? undefined : emoji,
+  };
+}
+
 export default function Preview({ data }: Props) {
   const { author, content, embeds, components, ephemeral, edited, timestamp } =
     data;
@@ -245,7 +263,7 @@ export default function Preview({ data }: Props) {
         roleColor={author.roleColor}
         ephemeral={ephemeral}
         edited={edited}
-        timestamp={timestamp}
+        timestamp={getSafeDate(timestamp)}
       >
         {content && <span>{parseMarkdown(content)}</span>}
 
@@ -280,10 +298,15 @@ export default function Preview({ data }: Props) {
               </DiscordEmbedFields>
             )}
 
-            {embed.footer.text && (
+            {(embed.footer.text || embed.showTimestamp) && (
               <DiscordEmbedFooter
                 slot="footer"
                 footerImage={embed.footer.iconUrl}
+                timestamp={
+                  embed.showTimestamp
+                    ? getSafeDate(embed.timestamp)
+                    : undefined
+                }
               >
                 {embed.footer.text}
               </DiscordEmbedFooter>
@@ -294,24 +317,27 @@ export default function Preview({ data }: Props) {
         {components.length > 0 &&
           components.map((row) => (
             <DiscordActionRow key={row.id} slot="components">
-              {row.components.map((btn) => (
-                <DiscordButton
-                  key={btn.id}
-                  type={
-                    btn.style === "link"
-                      ? "secondary"
-                      : btn.style === "danger"
-                        ? "destructive"
-                        : btn.style
-                  }
-                  url={btn.style === "link" ? btn.url : undefined}
-                  disabled={btn.disabled}
-                  emoji={btn.emoji || undefined}
-                  emojiName={btn.emoji || undefined}
-                >
-                  {btn.label}
-                </DiscordButton>
-              ))}
+              {row.components.map((btn) => {
+                const emojiData = resolveEmoji(btn.emoji);
+                return (
+                  <DiscordButton
+                    key={btn.id}
+                    type={
+                      btn.style === "link"
+                        ? "secondary"
+                        : btn.style === "danger"
+                          ? "destructive"
+                          : btn.style
+                    }
+                    url={btn.style === "link" ? btn.url : undefined}
+                    disabled={btn.disabled}
+                    emoji={emojiData.url}
+                    emojiName={emojiData.name}
+                  >
+                    {btn.label}
+                  </DiscordButton>
+                );
+              })}
             </DiscordActionRow>
           ))}
       </DiscordMessage>

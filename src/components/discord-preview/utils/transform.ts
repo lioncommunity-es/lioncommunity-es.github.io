@@ -21,6 +21,21 @@ function hexToDecimal(hex: string): number {
 }
 
 /**
+ * Detects if an emoji string is a snowflake ID or a unicode name.
+ * Also handles the animated property.
+ */
+function transformEmoji(emoji: string, animated?: boolean) {
+  if (!emoji) return undefined;
+
+  const isId = /^\d+$/.test(emoji);
+  return {
+    id: isId ? emoji : undefined,
+    name: isId ? undefined : emoji,
+    animated: animated || undefined,
+  };
+}
+
+/**
  * Transforms an internal EmbedData object into a Discord API compatible embed.
  */
 function transformEmbed(embed: EmbedData): APIEmbed {
@@ -52,9 +67,9 @@ function transformEmbed(embed: EmbedData): APIEmbed {
   if (embed.image) result.image = { url: embed.image };
   if (embed.thumbnail) result.thumbnail = { url: embed.thumbnail };
 
-  // Fields
+  // Fields (Max 25)
   if (embed.fields && embed.fields.length > 0) {
-    result.fields = embed.fields.map((f) => ({
+    result.fields = embed.fields.slice(0, 25).map((f) => ({
       name: f.name || "\u200b",
       value: f.value || "\u200b",
       inline: f.inline,
@@ -65,9 +80,11 @@ function transformEmbed(embed: EmbedData): APIEmbed {
   if (embed.showTimestamp) {
     result.timestamp = new Date().toISOString();
   } else if (embed.timestamp) {
-    // If a manual timestamp is provided and it's valid, use it
     try {
-      result.timestamp = new Date(embed.timestamp).toISOString();
+      const d = new Date(embed.timestamp);
+      if (!isNaN(d.getTime())) {
+        result.timestamp = d.toISOString();
+      }
     } catch {
       // ignore invalid dates
     }
@@ -79,41 +96,46 @@ function transformEmbed(embed: EmbedData): APIEmbed {
 /**
  * Transforms an internal ActionRowData into a Discord API compatible component.
  */
-function transformComponent(
-  comp: ActionRowData,
-): APIActionRowComponent<any> {
+function transformComponent(comp: ActionRowData): APIActionRowComponent<any> {
   return {
     type: DiscordComponentType.ActionRow,
-    components: comp.components.map(
-      (btn: ButtonData): APIButtonComponent => {
-        if (btn.style === "link") {
-          return {
-            type: DiscordComponentType.Button,
-            label: btn.label || undefined,
-            style: ButtonStyle.Link,
-            url: btn.url || "",
-            disabled: btn.disabled,
-            emoji: btn.emoji ? { name: btn.emoji } : undefined,
-          };
-        }
+    components: comp.components.map((btn: ButtonData): APIButtonComponent => {
+      const emoji = transformEmoji(btn.emoji, btn.animated);
+      const label = btn.label || (emoji ? undefined : "Button"); // Discord requires label or emoji
 
-        const nonLinkStyleMap: Record<string, ButtonStyle.Primary | ButtonStyle.Secondary | ButtonStyle.Success | ButtonStyle.Danger> = {
-          primary: ButtonStyle.Primary,
-          secondary: ButtonStyle.Secondary,
-          success: ButtonStyle.Success,
-          danger: ButtonStyle.Danger,
-        };
-
+      if (btn.style === "link") {
         return {
           type: DiscordComponentType.Button,
-          label: btn.label || undefined,
-          style: nonLinkStyleMap[btn.style] || ButtonStyle.Primary,
-          custom_id: btn.id,
+          label,
+          style: ButtonStyle.Link,
+          url: btn.url || "https://discord.com",
           disabled: btn.disabled,
-          emoji: btn.emoji ? { name: btn.emoji } : undefined,
+          emoji,
         };
-      },
-    ),
+      }
+
+      const nonLinkStyleMap: Record<
+        string,
+        | ButtonStyle.Primary
+        | ButtonStyle.Secondary
+        | ButtonStyle.Success
+        | ButtonStyle.Danger
+      > = {
+        primary: ButtonStyle.Primary,
+        secondary: ButtonStyle.Secondary,
+        success: ButtonStyle.Success,
+        danger: ButtonStyle.Danger,
+      };
+
+      return {
+        type: DiscordComponentType.Button,
+        label,
+        style: nonLinkStyleMap[btn.style] || ButtonStyle.Primary,
+        custom_id: btn.id || `btn_${Math.random().toString(36).substr(2, 9)}`,
+        disabled: btn.disabled,
+        emoji,
+      };
+    }),
   };
 }
 
@@ -134,8 +156,11 @@ export function toDiscordJSON(
   }
 
   if (data.components && data.components.length > 0) {
-    // Discord API expects ActionRow components at the top level of message components
     payload.components = data.components.map(transformComponent);
+  }
+
+  if (data.flags) {
+    payload.flags = data.flags;
   }
 
   return payload;
