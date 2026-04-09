@@ -8,9 +8,13 @@ import react from "@astrojs/react";
 export default defineConfig({
   site: "https://dev.lioncommunity.es",
 
+  devToolbar: {
+    enabled: false,
+  },
+
   integrations: [react()],
 
   vite: {
-    plugins: [tailwindcss()]
+    plugins: [tailwindcss()],
   },
 });
