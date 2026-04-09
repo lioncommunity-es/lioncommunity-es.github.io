@@ -1,5 +1,6 @@
-import { type ButtonData, type ButtonType, ComponentType } from "../types";
+import { type ButtonData, type ButtonType, ComponentType } from "@/types";
 import { Input, Toggle, DeleteBtn } from "./primitives";
+import { DragHandle } from "./dnd/DragHandle";
 
 const BUTTON_TYPES: { value: ButtonType; label: string }[] = [
   { value: "primary", label: "Primary (Blurple)" },
@@ -18,8 +19,9 @@ interface Props {
 export default function ButtonEditor({ btn, onUpdate, onDelete }: Props) {
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-xl border border-white/5 bg-white/3 px-4 py-3 shadow-inner">
+      <DragHandle />
       <div className="w-14">
-        <label className="mb-1 block text-[9px] font-bold uppercase tracking-wider text-white/30">
+        <label className="mb-1 block text-[9px] font-bold tracking-wider text-white/30 uppercase">
           Emoji
         </label>
         <Input
@@ -29,7 +31,7 @@ export default function ButtonEditor({ btn, onUpdate, onDelete }: Props) {
         />
       </div>
       <div className="min-w-[150px] flex-1">
-        <label className="mb-1 block text-[9px] font-bold uppercase tracking-wider text-white/30">
+        <label className="mb-1 block text-[9px] font-bold tracking-wider text-white/30 uppercase">
           Etiqueta
         </label>
         <Input
@@ -39,7 +41,7 @@ export default function ButtonEditor({ btn, onUpdate, onDelete }: Props) {
         />
       </div>
       <div className="w-40">
-        <label className="mb-1 block text-[9px] font-bold uppercase tracking-wider text-white/30">
+        <label className="mb-1 block text-[9px] font-bold tracking-wider text-white/30 uppercase">
           Estilo
         </label>
         <select
@@ -47,7 +49,7 @@ export default function ButtonEditor({ btn, onUpdate, onDelete }: Props) {
           onChange={(e) =>
             onUpdate({ ...btn, style: e.target.value as ButtonType })
           }
-          className="w-full rounded-lg border border-white/10 bg-[#1e1f22] px-3 py-2 text-[11px] text-white/80 outline-none hover:border-orange-500/30 transition-colors"
+          className="w-full rounded-lg border border-white/10 bg-[#1e1f22] px-3 py-2 text-[11px] text-white/80 transition-colors outline-none hover:border-orange-500/30"
         >
           {BUTTON_TYPES.map((t) => (
             <option key={t.value} value={t.value}>
@@ -59,7 +61,7 @@ export default function ButtonEditor({ btn, onUpdate, onDelete }: Props) {
 
       {btn.style === "link" && (
         <div className="min-w-[200px] flex-[1.5]">
-          <label className="mb-1 block text-[9px] font-bold uppercase tracking-wider text-white/30">
+          <label className="mb-1 block text-[9px] font-bold tracking-wider text-white/30 uppercase">
             URL del enlace
           </label>
           <Input

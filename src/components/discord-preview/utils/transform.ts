@@ -11,7 +11,7 @@ import type {
   EmbedData,
   ActionRowData,
   ButtonData,
-} from "../types";
+} from "@/types";
 
 /**
  * Converts a hex color string to a Discord-compatible decimal integer.
@@ -139,6 +139,153 @@ function transformComponent(comp: ActionRowData): APIActionRowComponent<any> {
   };
 }
 
+import type {
+  V2TopLevelComponent,
+  V2ContainerChild,
+  V2Accessory,
+} from "@/types/v2";
+
+/**
+ * Transforms a V2 component to the API JSON format
+ */
+function transformV2Component(
+  comp: V2TopLevelComponent | V2ContainerChild,
+): any {
+  if (comp.kind === "text_display") {
+    return {
+      type: 10,
+      content: comp.content,
+    };
+  }
+
+  if (comp.kind === "separator") {
+    return {
+      type: 14,
+      divider: comp.divider,
+      spacing: comp.spacing,
+    };
+  }
+
+  if (comp.kind === "media_gallery") {
+    return {
+      type: 12,
+      items: comp.items
+        .filter((i) => i.url)
+        .map((i) => ({
+          media: { url: i.url },
+          description: i.description || undefined,
+          spoiler: i.spoiler || false,
+        })),
+    };
+  }
+
+  if (comp.kind === "action_row") {
+    return {
+      type: 1,
+      components: comp.components.map((btn) => {
+        const emoji = btn.emoji
+          ? transformEmoji(btn.emoji, btn.animated)
+          : undefined;
+        const label = btn.label || (emoji ? undefined : "Button");
+
+        if (btn.style === "link") {
+          return {
+            type: 2,
+            label,
+            style: ButtonStyle.Link,
+            url: btn.url || "https://discord.com",
+            disabled: btn.disabled,
+            emoji,
+          };
+        }
+
+        const nonLinkStyleMap: Record<string, ButtonStyle> = {
+          primary: ButtonStyle.Primary,
+          secondary: ButtonStyle.Secondary,
+          success: ButtonStyle.Success,
+          danger: ButtonStyle.Danger,
+        };
+
+        return {
+          type: 2,
+          label,
+          style: nonLinkStyleMap[btn.style] || ButtonStyle.Primary,
+          custom_id: btn.id || `btn_${Math.random().toString(36).substr(2, 9)}`,
+          disabled: btn.disabled,
+          emoji,
+        };
+      }),
+    };
+  }
+
+  if (comp.kind === "section") {
+    const accessory = comp.accessory
+      ? (function calcAcc(acc: V2Accessory): any {
+          if (acc.kind === "thumbnail") {
+            return {
+              type: 11,
+              media: { url: acc.url },
+              description: acc.description,
+              spoiler: acc.spoiler,
+            };
+          }
+          if (acc.kind === "button_accessory") {
+            const emoji = acc.emoji ? transformEmoji(acc.emoji) : undefined;
+            const label = acc.label || (emoji ? undefined : "Button");
+
+            if (acc.style === "link") {
+              return {
+                type: 2,
+                label,
+                style: ButtonStyle.Link,
+                url: acc.url || "https://discord.com",
+                disabled: acc.disabled,
+                emoji,
+              };
+            }
+
+            const nonLinkStyleMap: Record<string, ButtonStyle> = {
+              primary: ButtonStyle.Primary,
+              secondary: ButtonStyle.Secondary,
+              success: ButtonStyle.Success,
+              danger: ButtonStyle.Danger,
+            };
+
+            return {
+              type: 2,
+              label,
+              style: nonLinkStyleMap[acc.style] || ButtonStyle.Primary,
+              custom_id:
+                acc.id || `btn_${Math.random().toString(36).substr(2, 9)}`,
+              disabled: acc.disabled,
+              emoji,
+            };
+          }
+          return undefined;
+        })(comp.accessory)
+      : undefined;
+
+    return {
+      type: 9,
+      components: comp.texts.filter((t) => t.content).map(transformV2Component),
+      accessory,
+    };
+  }
+
+  if (comp.kind === "container") {
+    return {
+      type: 17,
+      accent_color: comp.accentColor
+        ? hexToDecimal(comp.accentColor)
+        : undefined,
+      spoiler: comp.spoiler || false,
+      components: comp.children.map(transformV2Component),
+    };
+  }
+
+  return {};
+}
+
 /**
  * Main transformation function to generate a valid Discord Message JSON.
  */
@@ -147,20 +294,28 @@ export function toDiscordJSON(
 ): RESTPostAPIChannelMessageJSONBody {
   const payload: RESTPostAPIChannelMessageJSONBody = {};
 
-  if (data.content) {
-    payload.content = data.content;
-  }
+  if (data.useV2) {
+    if (data.v2Components && data.v2Components.length > 0) {
+      payload.components = data.v2Components.map(transformV2Component) as any;
+    }
+    payload.flags = (data.flags || 0) | 32768; // 32768 is IS_COMPONENTS_V2
+  } else {
+    // V1 Logic
+    if (data.content) {
+      payload.content = data.content;
+    }
 
-  if (data.embeds && data.embeds.length > 0) {
-    payload.embeds = data.embeds.map(transformEmbed);
-  }
+    if (data.embeds && data.embeds.length > 0) {
+      payload.embeds = data.embeds.map(transformEmbed);
+    }
 
-  if (data.components && data.components.length > 0) {
-    payload.components = data.components.map(transformComponent);
-  }
+    if (data.components && data.components.length > 0) {
+      payload.components = data.components.map(transformComponent);
+    }
 
-  if (data.flags) {
-    payload.flags = data.flags;
+    if (data.flags) {
+      payload.flags = data.flags;
+    }
   }
 
   return payload;

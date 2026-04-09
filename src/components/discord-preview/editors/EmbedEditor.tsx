@@ -1,5 +1,8 @@
-import type { EmbedData, EmbedField } from "../types";
+import type { EmbedData, EmbedField } from "@/types";
 import { Label, Input, Textarea, SectionHeader, DeleteBtn } from "./primitives";
+import { DragHandle } from "./dnd/DragHandle";
+import { SortableList } from "./dnd/SortableList";
+import { SortableItem } from "./dnd/SortableItem";
 
 /* ── Field Editor ─────────────────────────────────── */
 
@@ -14,6 +17,7 @@ function FieldEditor({
 }) {
   return (
     <div className="flex items-start gap-2">
+      <DragHandle className="pt-2" />
       <div className="grid flex-1 grid-cols-2 gap-1.5">
         <Input
           value={field.name}
@@ -65,16 +69,22 @@ export default function EmbedEditor({ embed, idx, onUpdate, onDelete }: Props) {
   const addField = () => {
     onUpdate({
       ...embed,
-      fields: [...embed.fields, { name: "", value: "", inline: false }],
+      fields: [
+        ...embed.fields,
+        { id: crypto.randomUUID(), name: "", value: "", inline: false },
+      ],
     });
   };
 
   return (
     <div className="space-y-3 rounded-xl border border-white/5 bg-white/2 p-3">
       <div className="flex items-center justify-between">
-        <span className="text-[11px] font-medium text-white/40">
-          Embed {idx + 1}
-        </span>
+        <div className="flex items-center gap-2">
+          <DragHandle />
+          <span className="text-[11px] font-medium text-white/40">
+            Embed {idx + 1}
+          </span>
+        </div>
         <DeleteBtn onClick={onDelete} />
       </div>
 
@@ -223,14 +233,20 @@ export default function EmbedEditor({ embed, idx, onUpdate, onDelete }: Props) {
       <div>
         <SectionHeader title="Campos" onAdd={addField} addLabel="Campo" />
         <div className="space-y-2">
-          {embed.fields.map((f, fi) => (
-            <FieldEditor
-              key={fi}
-              field={f}
-              onUpdate={(updated) => updateField(fi, updated)}
-              onDelete={() => deleteField(fi)}
-            />
-          ))}
+          <SortableList
+            items={embed.fields}
+            onReorder={(newFields) => onUpdate({ ...embed, fields: newFields })}
+          >
+            {embed.fields.map((f, fi) => (
+              <SortableItem key={f.id} id={f.id}>
+                <FieldEditor
+                  field={f}
+                  onUpdate={(updated) => updateField(fi, updated)}
+                  onDelete={() => deleteField(fi)}
+                />
+              </SortableItem>
+            ))}
+          </SortableList>
           {embed.fields.length === 0 && (
             <p className="text-[11px] text-white/20 italic">Sin campos</p>
           )}

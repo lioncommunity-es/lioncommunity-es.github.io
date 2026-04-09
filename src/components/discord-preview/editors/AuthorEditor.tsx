@@ -1,4 +1,4 @@
-import type { AuthorData } from "../types";
+import type { AuthorData } from "@/types";
 import { EditorCard, SectionHeader, Label, Input, Toggle } from "./primitives";
 
 interface Props {

@@ -6,7 +6,17 @@ import {
   ComponentType,
   type ActionRowData,
   type ButtonData,
-} from "./types";
+} from "@/types";
+import type {
+  V2TopLevelComponent,
+  V2Container,
+  V2Section,
+  V2TextDisplay,
+  V2Separator,
+  V2MediaGallery,
+  V2ActionRow,
+  V2ActionRowButton,
+} from "@/types/v2";
 
 export const DEFAULT_DATA: DiscordPreviewData = {
   author: {
@@ -26,9 +36,9 @@ export const DEFAULT_DATA: DiscordPreviewData = {
       description:
         "### Canales importantes\n- `#general` — Conversación general\n- `#proyectos` — Comparte tus proyectos\n- `#ayuda` — Pide ayuda técnica",
       fields: [
-        { name: "Miembros", value: "1,234", inline: true },
-        { name: "Online", value: "456", inline: true },
-        { name: "Nivel", value: "⭐ 3", inline: true },
+        { id: crypto.randomUUID(), name: "Miembros", value: "1,234", inline: true },
+        { id: crypto.randomUUID(), name: "Online", value: "456", inline: true },
+        { id: crypto.randomUUID(), name: "Nivel", value: "⭐ 3", inline: true },
       ],
       footer: {
         text: "Lion Community",
@@ -109,5 +119,64 @@ export function createEmptyButton(): ButtonData {
     label: "Botón",
     style: "primary",
     emoji: "",
+  };
+}
+
+// ─── V2 factory functions ────────────────────────────────────────────────────
+
+export function createV2TextDisplay(content = ""): V2TextDisplay {
+  return { kind: "text_display", id: crypto.randomUUID(), content };
+}
+
+export function createV2Separator(): V2Separator {
+  return {
+    kind: "separator",
+    id: crypto.randomUUID(),
+    divider: true,
+    spacing: 1,
+  };
+}
+
+export function createV2MediaGallery(): V2MediaGallery {
+  return {
+    kind: "media_gallery",
+    id: crypto.randomUUID(),
+    items: [{ url: "", description: "" }],
+  };
+}
+
+export function createV2ActionRowButton(): V2ActionRowButton {
+  return {
+    id: crypto.randomUUID(),
+    label: "Botón",
+    style: "primary",
+    emoji: "",
+  };
+}
+
+export function createV2ActionRow(): V2ActionRow {
+  return {
+    kind: "action_row",
+    id: crypto.randomUUID(),
+    components: [createV2ActionRowButton()],
+  };
+}
+
+export function createV2Section(): V2Section {
+  return {
+    kind: "section",
+    id: crypto.randomUUID(),
+    texts: [createV2TextDisplay("Texto de la sección")],
+    accessory: { kind: "thumbnail", url: "", description: "" },
+  };
+}
+
+export function createV2Container(): V2Container {
+  return {
+    kind: "container",
+    id: crypto.randomUUID(),
+    accentColor: "#5865f2",
+    spoiler: false,
+    children: [createV2TextDisplay("Contenido del contenedor")],
   };
 }

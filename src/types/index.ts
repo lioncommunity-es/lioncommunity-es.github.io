@@ -1,4 +1,5 @@
 import type { RESTPostAPIChannelMessageJSONBody, APIEmbed } from "discord-api-types/v10";
+export type { V2TopLevelComponent, V2Container, V2Section, V2TextDisplay, V2Separator, V2MediaGallery, V2MediaGalleryItem, V2ActionRow, V2ActionRowButton, V2Accessory, V2ThumbnailAccessory, V2ButtonAccessory, V2ContainerChild } from "./v2";
 
 export type ButtonType = "primary" | "secondary" | "success" | "danger" | "link";
 
@@ -9,6 +10,7 @@ export enum ComponentType {
 }
 
 export interface EmbedField {
+  id: string;
   name: string;
   value: string;
   inline?: boolean;
@@ -65,8 +67,12 @@ export interface DiscordPreviewData {
   components: MessageComponent[];
   ephemeral: boolean;
   edited: boolean;
-  timestamp?: string; // Optional message-level timestamp
-  flags?: number; // Message flags bitfield
+  timestamp?: string;
+  flags?: number;
+  /** When true, use V2 components and set IS_COMPONENTS_V2 flag */
+  useV2?: boolean;
+  /** V2 top-level components (replaces content/embeds when useV2 is true) */
+  v2Components?: import("./v2").V2TopLevelComponent[];
 }
 
 // Export the official types for use in other components
