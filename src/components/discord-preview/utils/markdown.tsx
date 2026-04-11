@@ -1,13 +1,10 @@
 import React from "react";
 import {
-  DiscordBold,
-  DiscordItalic,
   DiscordCode,
   DiscordMention,
   DiscordHeader,
   DiscordSpoiler,
   DiscordLink,
-  DiscordUnderlined,
   DiscordUnorderedList,
   DiscordListItem,
 } from "@skyra/discord-components-react";
@@ -36,23 +33,23 @@ export function parseInline(text: string): React.ReactNode[] {
 
     if (match[3]) {
       parts.push(
-        <DiscordBold key={match.index}>
-          <DiscordItalic>{match[3]}</DiscordItalic>
-        </DiscordBold>,
+        <strong key={match.index}>
+          <em>{match[3]}</em>
+        </strong>,
       );
     } else if (match[4]) {
-      parts.push(<DiscordBold key={match.index}>{match[4]}</DiscordBold>);
+      parts.push(<strong key={match.index}>{match[4]}</strong>);
     } else if (match[5]) {
-      parts.push(<DiscordItalic key={match.index}>{match[5]}</DiscordItalic>);
+      parts.push(<em key={match.index}>{match[5]}</em>);
     } else if (match[6]) {
       parts.push(
-        <DiscordUnderlined key={match.index}>{match[6]}</DiscordUnderlined>,
+        <u key={match.index}>{match[6]}</u>,
       );
     } else if (match[7]) {
       parts.push(
-        <span key={match.index} style={{ textDecoration: "line-through" }}>
+        <s key={match.index}>
           {match[7]}
-        </span>,
+        </s>,
       );
     } else if (match[8]) {
       parts.push(<DiscordCode key={match.index}>{match[8]}</DiscordCode>);
@@ -110,7 +107,6 @@ export function parseMarkdown(text: string): React.ReactNode[] {
       ln.startsWith("# ") ||
       ln.startsWith("## ") ||
       ln.startsWith("### ") ||
-      ln.startsWith("-# ") ||
       ln.startsWith("- ") ||
       ln.startsWith("* ")
     );
@@ -181,7 +177,7 @@ export function parseMarkdown(text: string): React.ReactNode[] {
       parts.push(
         <span
           key={`sub-${i}`}
-          className="mt-0.5 block text-[12px] font-medium leading-[16px] text-white/50"
+          className="text-[12px] font-medium text-white/50"
         >
           {parseInline(line.slice(3))}
         </span>,
