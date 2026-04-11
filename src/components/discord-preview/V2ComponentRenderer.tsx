@@ -10,7 +10,7 @@ import type {
   V2TextDisplay,
 } from "@/types/v2";
 import { parseMarkdown, resolveEmoji } from "./utils/markdown";
-import { DiscordButton } from "@skyra/discord-components-react";
+import { DiscordButton, DiscordActionRow } from "@skyra/discord-components-react";
 
 interface Props {
   components: V2TopLevelComponent[];
@@ -105,21 +105,23 @@ function AccessoryRenderer({ data }: { data: V2Accessory }) {
     const emojiData = resolveEmoji(data.emoji);
     return (
       <div className="shrink-0">
-        <DiscordButton
-          type={
-            data.style === "link"
-              ? "secondary"
-              : data.style === "danger"
-                ? "destructive"
-                : data.style
-          }
-          url={data.style === "link" ? data.url : undefined}
-          disabled={data.disabled}
-          emoji={emojiData.url}
-          emojiName={emojiData.name}
-        >
-          {data.label}
-        </DiscordButton>
+        <DiscordActionRow>
+          <DiscordButton
+            type={
+              data.style === "link"
+                ? "secondary"
+                : data.style === "danger"
+                  ? "destructive"
+                  : data.style
+            }
+            url={data.style === "link" ? data.url : undefined}
+            disabled={data.disabled}
+            emoji={emojiData.url}
+            emojiName={emojiData.name}
+          >
+            {data.label}
+          </DiscordButton>
+        </DiscordActionRow>
       </div>
     );
   }
@@ -164,7 +166,7 @@ function SectionRenderer({ data }: { data: V2Section }) {
 
 function ActionRowRenderer({ data }: { data: V2ActionRow }) {
   return (
-    <div className="mt-2 flex flex-wrap gap-2">
+    <DiscordActionRow className="mt-2 flex flex-wrap gap-2">
       {data.components.map((btn) => {
         const emojiData = resolveEmoji(btn.emoji);
         return (
@@ -186,7 +188,7 @@ function ActionRowRenderer({ data }: { data: V2ActionRow }) {
           </DiscordButton>
         );
       })}
-    </div>
+    </DiscordActionRow>
   );
 }
 

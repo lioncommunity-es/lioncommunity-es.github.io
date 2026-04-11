@@ -287,6 +287,226 @@ function transformV2Component(
 }
 
 /**
+ * Converts a decimal integer to a hex color string.
+ */
+function decimalToHex(decimal: number | undefined | null): string {
+  if (decimal === undefined || decimal === null || isNaN(decimal)) return "#5865f2"; // Discord blurple default
+  return "#" + decimal.toString(16).padStart(6, "0");
+}
+
+/**
+ * Parses a Discord Message JSON back into an internal DiscordPreviewData object.
+ */
+export function fromDiscordJSON(payload: any): DiscordPreviewData {
+  const result: DiscordPreviewData = {
+    content: payload.content || "",
+    embeds: [],
+    components: [],
+    ephemeral: !!(payload.flags && (payload.flags & 64)),
+    edited: false,
+    author: {
+      name: payload.username || "LionBot",
+      avatar: payload.avatar_url || "https://cdn.discordapp.com/embed/avatars/0.png",
+      bot: true,
+      verified: true,
+    },
+  };
+
+  const isV2 = !!(payload.flags && (payload.flags & 32768));
+  result.useV2 = isV2;
+  result.flags = payload.flags;
+
+  if (payload.embeds && Array.isArray(payload.embeds)) {
+    result.embeds = payload.embeds.map((e: any) => ({
+      id: crypto.randomUUID(),
+      title: e.title || "",
+      description: e.description || "",
+      url: e.url || "",
+      color: e.color !== undefined ? decimalToHex(e.color) : "#5865f2",
+      footer: {
+        text: e.footer?.text || "",
+        iconUrl: e.footer?.icon_url || "",
+      },
+      image: e.image?.url || "",
+      thumbnail: e.thumbnail?.url || "",
+      authorName: e.author?.name || "",
+      authorIcon: e.author?.icon_url || "",
+      authorUrl: e.author?.url || "",
+      showTimestamp: !!e.timestamp,
+      timestamp: e.timestamp,
+      fields: Array.isArray(e.fields)
+        ? e.fields.map((f: any) => ({
+            id: crypto.randomUUID(),
+            name: f.name || "",
+            value: f.value || "",
+            inline: !!f.inline,
+          }))
+        : [],
+    }));
+  }
+
+  const styleFromInt = (styleInt: number) => {
+    switch (styleInt) {
+      case 2: return "secondary";
+      case 3: return "success";
+      case 4: return "danger";
+      case 5: return "link";
+      case 1:
+      default: return "primary";
+    }
+  };
+
+  if (!isV2 && payload.components && Array.isArray(payload.components)) {
+    result.components = payload.components
+      .filter((row: any) => row.type === 1)
+      .map((row: any) => ({
+        type: 1,
+        id: crypto.randomUUID(),
+        components: Array.isArray(row.components)
+          ? row.components
+              .filter((c: any) => c.type === 2)
+              .map((c: any) => ({
+                type: 2,
+                id: c.custom_id || crypto.randomUUID(),
+                label: c.label || "",
+                style: styleFromInt(c.style),
+                url: c.url || "",
+                disabled: !!c.disabled,
+                emoji: c.emoji?.id || c.emoji?.name || "",
+                animated: !!c.emoji?.animated,
+              }))
+          : [],
+      }));
+  }
+
+  if (isV2 && payload.components && Array.isArray(payload.components)) {
+    result.v2Components = payload.components.map((c: any) => {
+      if (c.type === 10)
+        return { kind: "text_display", id: crypto.randomUUID(), content: c.content || "" };
+      if (c.type === 1)
+        return {
+          kind: "action_row",
+          id: crypto.randomUUID(),
+          components: Array.isArray(c.components)
+            ? c.components.map((btn: any) => ({
+                id: btn.custom_id || crypto.randomUUID(),
+                label: btn.label || "",
+                style: styleFromInt(btn.style),
+                url: btn.url || "",
+                disabled: !!btn.disabled,
+                emoji: btn.emoji?.id || btn.emoji?.name || "",
+                animated: !!btn.emoji?.animated,
+              }))
+            : [],
+        };
+      if (c.type === 14)
+        return {
+          kind: "separator",
+          id: crypto.randomUUID(),
+          divider: !!c.divider,
+          spacing: c.spacing || 1,
+        };
+      if (c.type === 12)
+        return {
+          kind: "media_gallery",
+          id: crypto.randomUUID(),
+          items: Array.isArray(c.items)
+            ? c.items.map((i: any) => ({
+                url: i.media?.url || "",
+                description: i.description,
+                spoiler: i.spoiler,
+              }))
+            : [],
+        };
+
+      if (c.type === 9) {
+        const texts = Array.isArray(c.components)
+          ? c.components
+              .filter((t: any) => t.type === 10)
+              .map((t: any) => ({
+                kind: "text_display",
+                id: crypto.randomUUID(),
+                content: t.content || "",
+              }))
+          : [];
+        let accessory: any = null;
+        if (c.accessory) {
+          if (c.accessory.type === 11)
+            accessory = {
+              kind: "thumbnail",
+              url: c.accessory.media?.url || "",
+              description: c.accessory.description,
+              spoiler: c.accessory.spoiler,
+            };
+          if (c.accessory.type === 2)
+            accessory = {
+              kind: "button_accessory",
+              id: c.accessory.custom_id || crypto.randomUUID(),
+              label: c.accessory.label || "",
+              style: styleFromInt(c.accessory.style),
+              url: c.accessory.url,
+              disabled: !!c.accessory.disabled,
+              emoji: c.accessory.emoji?.id || c.accessory.emoji?.name || "",
+            };
+        }
+        return { kind: "section", id: crypto.randomUUID(), texts, accessory };
+      }
+
+      if (c.type === 17)
+        return {
+          kind: "container",
+          id: crypto.randomUUID(),
+          accentColor: c.accent_color !== undefined ? decimalToHex(c.accent_color) : undefined,
+          spoiler: !!c.spoiler,
+          children: Array.isArray(c.components)
+            ? c.components
+                .map((child: any) => {
+                  if (child.type === 10)
+                    return { kind: "text_display", id: crypto.randomUUID(), content: child.content || "" };
+                  if (child.type === 14)
+                    return { kind: "separator", id: crypto.randomUUID(), divider: !!child.divider, spacing: child.spacing || 1 };
+                  if (child.type === 1)
+                    return {
+                      kind: "action_row",
+                      id: crypto.randomUUID(),
+                      components: Array.isArray(child.components)
+                        ? child.components.map((btn: any) => ({
+                            id: btn.custom_id || crypto.randomUUID(),
+                            label: btn.label || "",
+                            style: styleFromInt(btn.style),
+                            url: btn.url || "",
+                            disabled: !!btn.disabled,
+                            emoji: btn.emoji?.id || btn.emoji?.name || "",
+                            animated: !!btn.emoji?.animated,
+                          }))
+                        : [],
+                    };
+                  if (child.type === 12)
+                    return {
+                      kind: "media_gallery",
+                      id: crypto.randomUUID(),
+                      items: Array.isArray(child.items)
+                        ? child.items.map((i: any) => ({
+                            url: i.media?.url || "",
+                            description: i.description,
+                            spoiler: i.spoiler,
+                          }))
+                        : [],
+                    };
+                  return null;
+                })
+                .filter(Boolean)
+            : [],
+        };
+
+      return { kind: "text_display", id: crypto.randomUUID(), content: "" };
+    });
+  }
+
+  return result;
+}
+
+/**
  * Main transformation function to generate a valid Discord Message JSON.
  */
 export function toDiscordJSON(
@@ -316,6 +536,12 @@ export function toDiscordJSON(
     if (data.flags) {
       payload.flags = data.flags;
     }
+  }
+
+  // Webhook integration mappings
+  if (data.author) {
+    if (data.author.name) (payload as any).username = data.author.name;
+    if (data.author.avatar) (payload as any).avatar_url = data.author.avatar;
   }
 
   return payload;
