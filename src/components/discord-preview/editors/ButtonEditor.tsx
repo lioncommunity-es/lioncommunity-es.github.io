@@ -1,6 +1,7 @@
 import { type ButtonData, type ButtonType, ComponentType } from "@/types";
 import { Input, Toggle, DeleteBtn } from "./primitives";
 import { DragHandle } from "./dnd/DragHandle";
+import { extractSingleEmoji } from "../utils/markdown";
 
 export const BUTTON_TYPES: { value: ButtonType; label: string }[] = [
   { value: "primary", label: "Primary (Blurple)" },
@@ -26,7 +27,7 @@ export default function ButtonEditor({ btn, onUpdate, onDelete }: Props) {
         </label>
         <Input
           value={btn.emoji}
-          onChange={(v) => onUpdate({ ...btn, emoji: v })}
+          onChange={(v) => onUpdate({ ...btn, emoji: extractSingleEmoji(v) })}
           placeholder="😀"
         />
       </div>

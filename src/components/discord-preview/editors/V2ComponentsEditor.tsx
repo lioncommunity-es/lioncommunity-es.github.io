@@ -34,6 +34,7 @@ import { BUTTON_TYPES } from "./ButtonEditor";
 import { SortableList } from "./dnd/SortableList";
 import { SortableItem } from "./dnd/SortableItem";
 import { DragHandle } from "./dnd/DragHandle";
+import { extractSingleEmoji } from "../utils/markdown";
 
 type V2Component = V2TopLevelComponent | V2ContainerChild;
 
@@ -317,7 +318,9 @@ function ActionRowEditor({
                   />
                   <Input
                     value={btn.emoji || ""}
-                    onChange={(v) => updateButton(i, { ...btn, emoji: v })}
+                    onChange={(v) =>
+                      updateButton(i, { ...btn, emoji: extractSingleEmoji(v) })
+                    }
                     placeholder="Emoji"
                   />
                   <select
@@ -490,7 +493,7 @@ function SectionEditor({
                     ...data,
                     accessory: {
                       ...(data.accessory as V2ButtonAccessory),
-                      emoji: v,
+                      emoji: extractSingleEmoji(v),
                     },
                   })
                 }

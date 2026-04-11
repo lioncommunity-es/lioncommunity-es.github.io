@@ -203,7 +203,45 @@ export function resolveEmoji(emoji: string | undefined) {
   if (!emoji) return { url: undefined, name: undefined };
   const isId = /^\d+$/.test(emoji);
   return {
-    url: isId ? `https://cdn.discordapp.com/emojis/${emoji}.png` : undefined,
+    url: isId ? `https://cdn.discordapp.com/emojis/${emoji}.png` : emoji,
     name: isId ? undefined : emoji,
   };
+}
+
+interface IntlSegment {
+  segment: string;
+  index: number;
+  input: string;
+}
+
+interface IntlSegmenter {
+  new (
+    locale?: string,
+    options?: { granularity: "grapheme" | "word" | "sentence" },
+  ): {
+    segment(input: string): Iterable<IntlSegment>;
+  };
+}
+
+/**
+ * Extracts the first emoji (grapheme) or the full numeric ID from a string.
+ */
+export function extractSingleEmoji(text: string): string {
+  if (!text) return "";
+  // If it's a numeric ID, allow the whole thing
+  if (/^\d+$/.test(text)) return text;
+
+  // Use Intl.Segmenter for robust grapheme extraction (skin tones, flags, etc)
+  const Segmenter = (Intl as any).Segmenter as IntlSegmenter | undefined;
+  if (typeof Intl !== "undefined" && Segmenter) {
+    const segmenter = new Segmenter(undefined, {
+      granularity: "grapheme",
+    });
+    const segments = segmenter.segment(text);
+    const first = Array.from(segments)[0];
+    return first ? first.segment : "";
+  }
+
+  // Fallback for environments without Segmenter
+  return Array.from(text)[0] || "";
 }
