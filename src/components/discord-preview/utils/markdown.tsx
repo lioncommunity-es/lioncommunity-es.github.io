@@ -198,13 +198,36 @@ export function parseMarkdown(text: string): React.ReactNode[] {
   return parts;
 }
 
-/** Resolves an emoji string to a URL if it's a snowflake ID */
+/**
+ * Converts an emoji string to its Twemoji SVG URL.
+ */
+function getTwemojiUrl(emoji: string): string {
+  const codePoints: string[] = [];
+  // Correctly iterate over code points (handles surrogate pairs)
+  for (const char of emoji) {
+    const cp = char.codePointAt(0);
+    if (cp) codePoints.push(cp.toString(16));
+  }
+  // Remove FE0F (variation selector) as Twemoji generally omits it in filenames
+  const filtered = codePoints.filter((cp) => cp !== "fe0f").join("-");
+  return `https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/svg/${filtered}.svg`;
+}
+
+/** Resolves an emoji string to a URL if it's a snowflake ID or unicode emoji */
 export function resolveEmoji(emoji: string | undefined) {
   if (!emoji) return { url: undefined, name: undefined };
   const isId = /^\d+$/.test(emoji);
+
+  if (isId) {
+    return {
+      url: `https://cdn.discordapp.com/emojis/${emoji}.png`,
+      name: undefined,
+    };
+  }
+
   return {
-    url: isId ? `https://cdn.discordapp.com/emojis/${emoji}.png` : emoji,
-    name: isId ? undefined : emoji,
+    url: getTwemojiUrl(emoji),
+    name: emoji,
   };
 }
 
