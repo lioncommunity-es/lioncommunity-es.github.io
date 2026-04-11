@@ -16,6 +16,7 @@ import type {
   V2ActionRow,
   V2Container,
   V2ActionRowButton,
+  V2ButtonAccessory,
 } from "@/types/v2";
 import {
   createV2TextDisplay,
@@ -29,6 +30,7 @@ import {
 
 // Need types from primitives for dropdown
 import { type ButtonType } from "@/types";
+import { BUTTON_TYPES } from "./ButtonEditor";
 import { SortableList } from "./dnd/SortableList";
 import { SortableItem } from "./dnd/SortableItem";
 import { DragHandle } from "./dnd/DragHandle";
@@ -305,24 +307,51 @@ function ActionRowEditor({
         >
           {data.components.map((btn, i) => (
             <SortableItem key={btn.id} id={btn.id}>
-              <div className="flex items-center gap-2 rounded bg-black/20 p-2">
-                <DragHandle />
-                <Input
-                  value={btn.label}
-                  onChange={(v) => updateButton(i, { ...btn, label: v })}
-                  placeholder="Label"
-                />
-                <Input
-                  value={btn.emoji || ""}
-                  onChange={(v) => updateButton(i, { ...btn, emoji: v })}
-                  placeholder="Emoji"
-                />
-                <DeleteBtn
-                  onClick={() => {
-                    const c = data.components.filter((_, j) => j !== i);
-                    onChange({ ...data, components: c });
-                  }}
-                />
+              <div className="flex flex-col gap-2 rounded bg-black/20 p-2">
+                <div className="flex items-center gap-2">
+                  <DragHandle />
+                  <Input
+                    value={btn.label}
+                    onChange={(v) => updateButton(i, { ...btn, label: v })}
+                    placeholder="Label"
+                  />
+                  <Input
+                    value={btn.emoji || ""}
+                    onChange={(v) => updateButton(i, { ...btn, emoji: v })}
+                    placeholder="Emoji"
+                  />
+                  <select
+                    value={btn.style}
+                    onChange={(e) =>
+                      updateButton(i, {
+                        ...btn,
+                        style: e.target.value as ButtonType,
+                      })
+                    }
+                    className="rounded border border-white/10 bg-[#1e1f22] px-2 py-1 text-[10px] text-white/80 outline-none hover:border-orange-500/30"
+                  >
+                    {BUTTON_TYPES.map((t) => (
+                      <option key={t.value} value={t.value}>
+                        {t.label.split(" (")[0]}
+                      </option>
+                    ))}
+                  </select>
+                  <DeleteBtn
+                    onClick={() => {
+                      const c = data.components.filter((_, j) => j !== i);
+                      onChange({ ...data, components: c });
+                    }}
+                  />
+                </div>
+                {btn.style === "link" && (
+                  <div className="pl-6">
+                    <Input
+                      value={btn.url || ""}
+                      onChange={(v) => updateButton(i, { ...btn, url: v })}
+                      placeholder="URL del enlace (https://...)"
+                    />
+                  </div>
+                )}
               </div>
             </SortableItem>
           ))}
@@ -437,6 +466,72 @@ function SectionEditor({
             }
             placeholder="URL del thumbnail"
           />
+        )}
+        {data.accessory?.kind === "button_accessory" && (
+          <div className="space-y-2 rounded bg-black/20 p-2">
+            <div className="flex items-center gap-2">
+              <Input
+                value={data.accessory.label}
+                onChange={(v) =>
+                  onChange({
+                    ...data,
+                    accessory: {
+                      ...(data.accessory as V2ButtonAccessory),
+                      label: v,
+                    },
+                  })
+                }
+                placeholder="Label"
+              />
+              <Input
+                value={data.accessory.emoji || ""}
+                onChange={(v) =>
+                  onChange({
+                    ...data,
+                    accessory: {
+                      ...(data.accessory as V2ButtonAccessory),
+                      emoji: v,
+                    },
+                  })
+                }
+                placeholder="Emoji"
+              />
+              <select
+                value={data.accessory.style}
+                onChange={(e) =>
+                  onChange({
+                    ...data,
+                    accessory: {
+                      ...(data.accessory as V2ButtonAccessory),
+                      style: e.target.value as any,
+                    },
+                  })
+                }
+                className="rounded border border-white/10 bg-[#1e1f22] px-2 py-1 text-[10px] text-white/80 outline-none hover:border-orange-500/30"
+              >
+                {BUTTON_TYPES.map((t) => (
+                  <option key={t.value} value={t.value}>
+                    {t.label.split(" (")[0]}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {data.accessory.style === "link" && (
+              <Input
+                value={data.accessory.url || ""}
+                onChange={(v) =>
+                  onChange({
+                    ...data,
+                    accessory: {
+                      ...(data.accessory as V2ButtonAccessory),
+                      url: v,
+                    },
+                  })
+                }
+                placeholder="URL del enlace (https://...)"
+              />
+            )}
+          </div>
         )}
       </div>
     </div>

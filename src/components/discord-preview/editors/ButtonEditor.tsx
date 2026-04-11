@@ -2,7 +2,7 @@ import { type ButtonData, type ButtonType, ComponentType } from "@/types";
 import { Input, Toggle, DeleteBtn } from "./primitives";
 import { DragHandle } from "./dnd/DragHandle";
 
-const BUTTON_TYPES: { value: ButtonType; label: string }[] = [
+export const BUTTON_TYPES: { value: ButtonType; label: string }[] = [
   { value: "primary", label: "Primary (Blurple)" },
   { value: "secondary", label: "Secondary (Grey)" },
   { value: "success", label: "Success (Green)" },
