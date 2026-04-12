@@ -10,7 +10,10 @@ import type {
   V2TextDisplay,
 } from "@/types/v2";
 import { parseMarkdown, resolveEmoji } from "./utils/markdown";
-import { DiscordButton, DiscordActionRow } from "@skyra/discord-components-react";
+import {
+  DiscordButton,
+  DiscordActionRow,
+} from "@skyra/discord-components-react";
 
 interface Props {
   components: V2TopLevelComponent[];
@@ -40,25 +43,40 @@ function MediaGalleryRenderer({ data }: { data: V2MediaGallery }) {
 
   const getSrc = (url?: string) => {
     if (!url) return "";
-    return url.startsWith("attachment://") ? "https://via.placeholder.com/400?text=Attachment" : url;
+    return url.startsWith("attachment://")
+      ? "https://via.placeholder.com/400?text=Attachment"
+      : url;
   };
 
   const getFallback = () => (
-    <div className="flex h-full w-full items-center justify-center text-xs text-white/20">Empty</div>
+    <div className="flex h-full w-full items-center justify-center text-xs text-white/20">
+      Empty
+    </div>
   );
 
-  const Img = ({ item }: { item: typeof items[0] }) => (
+  const Img = ({ item }: { item: (typeof items)[0] }) =>
     item.url ? (
-      <img src={getSrc(item.url)} alt={item.description || "Image"} className="h-full w-full object-cover" />
-    ) : getFallback()
-  );
+      <img
+        src={getSrc(item.url)}
+        alt={item.description || "Image"}
+        className="h-full w-full object-cover"
+      />
+    ) : (
+      getFallback()
+    );
 
   if (count === 1) {
     return (
       <div className="mt-2 max-w-[500px] overflow-hidden rounded-[8px] bg-[#2b2d31]">
         {items[0].url ? (
-           <img src={getSrc(items[0].url)} alt={items[0].description} className="max-h-[350px] min-h-[150px] w-auto max-w-full object-cover" />
-        ) : getFallback()}
+          <img
+            src={getSrc(items[0].url)}
+            alt={items[0].description}
+            className="max-h-[350px] min-h-[150px] w-auto max-w-full object-cover"
+          />
+        ) : (
+          getFallback()
+        )}
       </div>
     );
   }
@@ -66,8 +84,12 @@ function MediaGalleryRenderer({ data }: { data: V2MediaGallery }) {
   if (count === 2) {
     return (
       <div className="mt-2 grid h-[250px] max-w-[500px] grid-cols-2 gap-1 overflow-hidden rounded-[8px]">
-        <div className="bg-[#2b2d31]"><Img item={items[0]} /></div>
-        <div className="bg-[#2b2d31]"><Img item={items[1]} /></div>
+        <div className="bg-[#2b2d31]">
+          <Img item={items[0]} />
+        </div>
+        <div className="bg-[#2b2d31]">
+          <Img item={items[1]} />
+        </div>
       </div>
     );
   }
@@ -75,10 +97,16 @@ function MediaGalleryRenderer({ data }: { data: V2MediaGallery }) {
   if (count === 3) {
     return (
       <div className="mt-2 grid h-[300px] max-w-[500px] grid-cols-2 gap-1 overflow-hidden rounded-[8px]">
-        <div className="h-full bg-[#2b2d31]"><Img item={items[0]} /></div>
-        <div className="grid grid-rows-2 gap-1 h-full">
-          <div className="bg-[#2b2d31]"><Img item={items[1]} /></div>
-          <div className="bg-[#2b2d31]"><Img item={items[2]} /></div>
+        <div className="h-full bg-[#2b2d31]">
+          <Img item={items[0]} />
+        </div>
+        <div className="grid h-full grid-rows-2 gap-1">
+          <div className="bg-[#2b2d31]">
+            <Img item={items[1]} />
+          </div>
+          <div className="bg-[#2b2d31]">
+            <Img item={items[2]} />
+          </div>
         </div>
       </div>
     );
@@ -159,7 +187,7 @@ function SectionRenderer({ data }: { data: V2Section }) {
           <TextDisplayRenderer key={txt.id} data={txt} />
         ))}
       </div>
-      {data.accessory && <AccessoryRenderer data={data.accessory} />}
+      <AccessoryRenderer data={data.accessory} />
     </div>
   );
 }

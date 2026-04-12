@@ -79,7 +79,7 @@ export interface V2Section {
   /** Up to 3 TextDisplay components on the left */
   texts: V2TextDisplay[];
   /** One accessory on the right */
-  accessory: V2Accessory | null;
+  accessory: V2Accessory;
 }
 
 /** MessageComponent allowed inside a container */

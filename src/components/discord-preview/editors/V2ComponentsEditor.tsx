@@ -92,10 +92,7 @@ export default function V2ComponentsEditor({ components, onChange }: Props) {
         </div>
 
         <div className="space-y-4">
-          <SortableList
-            items={components || []}
-            onReorder={onChange}
-          >
+          <SortableList items={components || []} onReorder={onChange}>
             {(components || []).map((comp, i) => (
               <SortableItem key={comp.id} id={comp.id}>
                 <V2ComponentWrapper
@@ -424,13 +421,8 @@ function SectionEditor({
         </label>
         <div className="mb-2 flex gap-2">
           <Toggle
-            label="Sin Accesorio"
-            checked={!data.accessory}
-            onChange={() => onChange({ ...data, accessory: null })}
-          />
-          <Toggle
             label="Botón"
-            checked={data.accessory?.kind === "button_accessory"}
+            checked={data.accessory.kind === "button_accessory"}
             onChange={() =>
               onChange({
                 ...data,
@@ -445,13 +437,16 @@ function SectionEditor({
           />
           <Toggle
             label="Thumbnail"
-            checked={data.accessory?.kind === "thumbnail"}
+            checked={data.accessory.kind === "thumbnail"}
             onChange={() =>
-              onChange({ ...data, accessory: { kind: "thumbnail", url: "" } })
+              onChange({
+                ...data,
+                accessory: { kind: "thumbnail", url: "", description: "" },
+              })
             }
           />
         </div>
-        {data.accessory?.kind === "thumbnail" && (
+        {data.accessory.kind === "thumbnail" && (
           <Input
             value={data.accessory.url}
             onChange={(v) =>
@@ -461,7 +456,7 @@ function SectionEditor({
                   kind: "thumbnail",
                   url: v,
                   description:
-                    data.accessory?.kind === "thumbnail"
+                    data.accessory.kind === "thumbnail"
                       ? data.accessory.description
                       : undefined,
                 },
@@ -470,7 +465,7 @@ function SectionEditor({
             placeholder="URL del thumbnail"
           />
         )}
-        {data.accessory?.kind === "button_accessory" && (
+        {data.accessory.kind === "button_accessory" && (
           <div className="space-y-2 rounded bg-black/20 p-2">
             <div className="flex items-center gap-2">
               <Input

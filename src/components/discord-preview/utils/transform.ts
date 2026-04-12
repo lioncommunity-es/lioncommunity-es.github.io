@@ -429,7 +429,12 @@ export function fromDiscordJSON(payload: any): DiscordPreviewData {
                 content: t.content || "",
               }))
           : [];
-        let accessory: any = null;
+        let accessory: any = {
+          kind: "thumbnail",
+          url: "",
+          description: "",
+        };
+
         if (c.accessory) {
           if (c.accessory.type === 11)
             accessory = {
