@@ -94,7 +94,7 @@ export function createEmptyEmbed(): EmbedData {
     url: "",
     description: "",
     fields: [] as EmbedField[],
-    footer: { text: "" },
+    footer: { text: "", iconUrl: "" },
     thumbnail: "",
     image: "",
     authorName: "",

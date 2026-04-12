@@ -176,10 +176,10 @@ export default function EmbedEditor({ embed, idx, onUpdate, onDelete }: Props) {
         </div>
       </div>
 
-      {/* Footer & Timestamp */}
-      <div className="flex items-end gap-2">
-        <div className="flex-1">
-          <Label>Footer</Label>
+      {/* Footer */}
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <Label>Texto del footer</Label>
           <Input
             value={embed.footer?.text || ""}
             onChange={(v) =>
@@ -188,21 +188,33 @@ export default function EmbedEditor({ embed, idx, onUpdate, onDelete }: Props) {
             placeholder="Texto del footer"
           />
         </div>
-        <div className="mb-2">
-          <label className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-white/5 bg-white/3 px-2 py-1.5 transition-colors hover:bg-white/5">
-            <input
-              type="checkbox"
-              checked={embed.showTimestamp ?? false}
-              onChange={(e) =>
-                onUpdate({ ...embed, showTimestamp: e.target.checked })
-              }
-              className="h-3.5 w-3.5 rounded accent-orange-500"
-            />
-            <span className="text-[10px] font-medium text-white/40">
-              Timestamp
-            </span>
-          </label>
+        <div>
+          <Label>Icono del footer</Label>
+          <Input
+            value={embed.footer?.iconUrl || ""}
+            onChange={(v) =>
+              onUpdate({ ...embed, footer: { ...embed.footer, iconUrl: v } })
+            }
+            placeholder="https://..."
+          />
         </div>
+      </div>
+
+      {/* Timestamp Toggle */}
+      <div className="flex justify-end">
+        <label className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-white/5 bg-white/3 px-2.5 py-1.5 transition-colors hover:bg-white/5">
+          <input
+            type="checkbox"
+            checked={embed.showTimestamp ?? false}
+            onChange={(e) =>
+              onUpdate({ ...embed, showTimestamp: e.target.checked })
+            }
+            className="h-3.5 w-3.5 rounded accent-orange-500"
+          />
+          <span className="text-[10px] font-bold uppercase tracking-wider text-white/40">
+            Timestamp
+          </span>
+        </label>
       </div>
       {embed.showTimestamp && (
         <div>

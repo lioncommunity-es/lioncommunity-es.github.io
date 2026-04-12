@@ -7,6 +7,7 @@ import {
   DiscordLink,
   DiscordUnorderedList,
   DiscordListItem,
+  DiscordCustomEmoji,
 } from "@skyra/discord-components-react";
 
 /** Parses inline markdown elements (bold, italic, etc) while handling escaping */
@@ -15,7 +16,7 @@ export function parseInline(text: string): React.ReactNode[] {
 
   const parts: React.ReactNode[] = [];
   const regex =
-    /(\\)?(\*\*\*(.+?)\*\*\*|\*\*(.+?)\*\*|\*(.+?)\*|__(.+?)__|~~(.+?)~~|`(.+?)`|<@(\w+)>|<#(\w+)>|<@&(\w+)>|\[(.+?)\]\((.+?)\)|\|\|(.+?)\|\|)/g;
+    /(\\)?(\*\*\*(.+?)\*\*\*|\*\*(.+?)\*\*|\*(.+?)\*|__(.+?)__|~~(.+?)~~|`(.+?)`|<@(\w+)>|<#(\w+)>|<@&(\w+)>|\[(.+?)\]\((.+?)\)|\|\|(.+?)\|\||<(a)?:(\w+):(\d+)>)/g;
   let lastIndex = 0;
   let match;
 
@@ -80,6 +81,17 @@ export function parseInline(text: string): React.ReactNode[] {
       );
     } else if (match[14]) {
       parts.push(<DiscordSpoiler key={match.index}>{match[14]}</DiscordSpoiler>);
+    } else if (match[16] && match[17]) {
+      const isAnimated = !!match[15];
+      const emojiName = match[16];
+      const emojiId = match[17];
+      parts.push(
+        <DiscordCustomEmoji
+          key={match.index}
+          name={emojiName}
+          url={`https://cdn.discordapp.com/emojis/${emojiId}.${isAnimated ? "gif" : "png"}`}
+        />,
+      );
     }
 
     lastIndex = match.index + match[0].length;
