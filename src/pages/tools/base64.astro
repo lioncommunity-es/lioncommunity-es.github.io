@@ -232,13 +232,21 @@ import ToolLayout from "@layouts/ToolLayout.astro";
                 let origSize: number, encSize: number;
 
                 if (isEncoding) {
-                    result = btoa(unescape(encodeURIComponent(text)));
+                    const bytes = new TextEncoder().encode(text);
+                    let binString = "";
+                    for (let i = 0; i < bytes.length; i++) {
+                        binString += String.fromCodePoint(bytes[i]);
+                    }
+                    result = btoa(binString);
                     origSize = new Blob([text]).size;
                     encSize = result.length;
                 } else {
-                    result = decodeURIComponent(
-                        escape(atob(text.replace(/\s/g, ""))),
-                    );
+                    const binString = atob(text.replace(/\s/g, ""));
+                    const bytes = new Uint8Array(binString.length);
+                    for (let i = 0; i < binString.length; i++) {
+                        bytes[i] = binString.charCodeAt(i);
+                    }
+                    result = new TextDecoder().decode(bytes);
                     origSize = new Blob([result]).size;
                     encSize = text.replace(/\s/g, "").length;
                 }

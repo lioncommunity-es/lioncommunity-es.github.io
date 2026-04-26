@@ -12,26 +12,27 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/react": "5.0.3",
-    "@dnd-kit/core": "^6.3.1",
-    "@dnd-kit/sortable": "^10.0.0",
-    "@dnd-kit/utilities": "^3.2.2",
+    "@astrojs/react": "5.0.4",
+    "@dnd-kit/core": "6.3.1",
+    "@dnd-kit/sortable": "10.0.0",
+    "@dnd-kit/utilities": "3.2.2",
     "@skyra/discord-components-core": "4.0.2",
     "@skyra/discord-components-react": "4.0.2",
-    "@tailwindcss/vite": "4.2.2",
+    "@tailwindcss/vite": "4.2.4",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
-    "astro": "6.1.5",
-    "discord-api-types": "0.38.44",
+    "astro": "6.1.9",
+    "discord-api-types": "0.38.47",
     "react": "19.2.5",
     "react-dom": "19.2.5",
-    "tailwindcss": "4.2.2"
+    "tailwindcss": "4.2.4"
   },
   "devDependencies": {
-    "prettier": "3.8.1",
+    "@astrojs/check": "^0.9.8",
+    "prettier": "3.8.3",
     "prettier-plugin-astro": "0.14.1",
-    "prettier-plugin-tailwindcss": "0.7.2",
+    "prettier-plugin-tailwindcss": "0.7.3",
     "tsx": "4.21.0",
-    "typescript": "^6.0.2"
+    "typescript": "6.0.3"
   }
 }

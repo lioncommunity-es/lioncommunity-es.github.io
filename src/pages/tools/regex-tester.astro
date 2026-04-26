@@ -273,7 +273,8 @@ import ToolLayout from "@layouts/ToolLayout.astro";
             }
 
             try {
-                const regex = new RegExp(pattern, flags);
+                // Validate regex syntax
+                new RegExp(pattern, flags);
                 errorEl.classList.add("hidden");
 
                 const t0 = performance.now();

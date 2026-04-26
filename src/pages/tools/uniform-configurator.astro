@@ -1,0 +1,1352 @@
+---
+import ToolLayout from "@layouts/ToolLayout.astro";
+---
+
+<ToolLayout
+    title="Configurador Ropa Masterjob"
+    description="Crea y gestiona conjuntos de uniformes para FiveM. Exporta en formato Lua con soporte para rangos."
+    icon="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18">
+    <div id="uc-app" class="font-sans">
+        <div id="uc-layout" class="flex min-h-[640px] gap-4 max-sm:flex-col">
+            <!-- ── Sidebar ────────────────────────────────── -->
+            <aside
+                id="uc-sidebar"
+                class="flex w-60 shrink-0 flex-col gap-2 overflow-hidden rounded-2xl border border-white/6 bg-white/2 p-4 max-sm:w-full">
+                <div class="mb-1 flex items-center justify-between">
+                    <span
+                        class="text-[11px] font-semibold tracking-wider text-white/35 uppercase"
+                        >Conjuntos</span
+                    >
+                    <div class="flex gap-1.5">
+                        <button
+                            id="btn-new-folder"
+                            class="cursor-pointer rounded-lg border-none bg-white/10 px-2 py-1 text-xs font-semibold tracking-wide text-white transition-all duration-150 hover:bg-white/20 active:scale-95"
+                            title="Nueva carpeta">📁</button
+                        >
+                        <button
+                            id="btn-new-set"
+                            class="cursor-pointer rounded-lg border-none bg-amber-500 px-2.5 py-1 text-xs font-semibold tracking-wide text-[#0d1117] transition-all duration-150 hover:bg-amber-400 active:scale-95"
+                            >+ Nuevo</button
+                        >
+                    </div>
+                </div>
+                <ul
+                    id="set-list"
+                    class="m-0 flex flex-1 list-none flex-col gap-0.5 overflow-y-auto p-0 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:rounded-sm [&::-webkit-scrollbar-thumb]:bg-white/10">
+                </ul>
+                <div class="mt-1 border-t border-white/6 pt-2">
+                    <button
+                        id="btn-import-url"
+                        class="w-full cursor-pointer rounded-lg border border-white/8 bg-white/5 px-2.5 py-1.5 text-xs font-medium text-white/55 transition-all duration-150 hover:bg-white/8 hover:text-white/85"
+                        >⬆ Importar desde URL</button
+                    >
+                </div>
+            </aside>
+
+            <!-- ── Main panel ──────────────────────────────── -->
+            <div id="uc-main" class="flex min-w-0 flex-1 flex-col gap-4">
+                <!-- Empty state -->
+                <div
+                    id="main-empty"
+                    class="flex h-full flex-col items-center justify-center gap-3 py-16 text-white/18">
+                    <svg
+                        width="48"
+                        height="48"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="1"
+                        ><path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"
+                        ></path></svg
+                    >
+                    <span class="text-[15px] font-medium"
+                        >Selecciona o crea un conjunto</span
+                    >
+                </div>
+
+                <!-- Editor -->
+                <div id="main-editor" class="hidden flex-col gap-4">
+                    <!-- Header row -->
+                    <div class="uc-card flex flex-wrap items-end gap-3">
+                        <div class="min-w-[160px] flex-1">
+                            <label class="uc-label">Nombre del conjunto</label>
+                            <input
+                                id="set-name"
+                                type="text"
+                                class="uc-input w-full"
+                                placeholder="Ej: TAC, SWAT..."
+                            />
+                        </div>
+                        <div>
+                            <label class="uc-label">Carpeta</label>
+                            <select
+                                id="set-folder"
+                                class="uc-select min-w-[120px]">
+                                <option value="">(Ninguna)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="uc-label">Antibalas %</label>
+                            <input
+                                id="set-bulletproof"
+                                type="number"
+                                min="0"
+                                max="100"
+                                class="uc-input w-[70px] text-center"
+                                value="0"
+                            />
+                        </div>
+                        <div>
+                            <label class="uc-label">Tipo</label>
+                            <select id="set-type" class="uc-select">
+                                <option value="normal">Normal</option>
+                                <option value="ranked">Con rangos</option>
+                            </select>
+                        </div>
+                        <button id="btn-export-lua" class="uc-btn-accent"
+                            >⬇ Exportar Lua</button
+                        >
+                        <button id="btn-share" class="uc-btn-ghost"
+                            >🔗 Compartir</button
+                        >
+                    </div>
+
+                    <!-- Rank management -->
+                    <div id="rank-mgmt" class="uc-card hidden">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span
+                                class="text-[11px] font-semibold tracking-wide text-white/35 uppercase"
+                                >Tabs de rango:</span
+                            >
+                            <div
+                                id="rank-tabs"
+                                class="flex flex-1 flex-wrap gap-1.5">
+                            </div>
+                            <button
+                                id="btn-add-rank"
+                                class="uc-btn-ghost px-2.5 py-1 text-xs"
+                                >+ Rango</button
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Copy from / Paste bar -->
+                    <div class="uc-card flex flex-wrap items-center gap-2.5">
+                        <span class="text-xs whitespace-nowrap text-white/35"
+                            >Copiar de:</span
+                        >
+                        <select
+                            id="copy-src-set"
+                            class="uc-select min-w-[120px] flex-1"></select>
+                        <select
+                            id="copy-src-tab"
+                            class="uc-select min-w-[110px]"></select>
+                        <button id="btn-copy-from" class="uc-btn-ghost text-xs"
+                            >Copiar aquí</button
+                        >
+                        <div class="flex-1"></div>
+                        <div
+                            class="flex items-center gap-1.5 px-2 text-xs text-white/30"
+                            title="Haz clic en una columna (Masculino o Femenino) y presiona Ctrl+V para pegar">
+                            <span>📋</span>
+                            <span>Ctrl+V (desde Excel)</span>
+                        </div>
+                    </div>
+
+                    <!-- Clothing table -->
+                    <div class="uc-card overflow-auto p-0">
+                        <table class="uc-table w-full">
+                            <thead>
+                                <tr class="border-b border-white/[0.07]">
+                                    <th
+                                        class="w-[110px] px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-wide text-white/30 uppercase"
+                                        >Prenda</th
+                                    >
+                                    <th
+                                        colspan="2"
+                                        data-gender-header="male"
+                                        class="active-gender:bg-white/10 cursor-pointer px-2 py-2.5 text-center text-[11px] font-semibold tracking-wide text-[rgba(64,180,255,0.7)] uppercase transition-all hover:bg-white/5"
+                                        >♂ Masculino</th
+                                    >
+                                    <th
+                                        colspan="2"
+                                        data-gender-header="female"
+                                        class="active-gender:bg-white/10 cursor-pointer px-2 py-2.5 text-center text-[11px] font-semibold tracking-wide text-[rgba(255,120,180,0.7)] uppercase transition-all hover:bg-white/5"
+                                        >♀ Femenino</th
+                                    >
+                                </tr>
+                                <tr class="border-b-2 border-white/[0.07]">
+                                    <th></th>
+                                    <th
+                                        class="px-2 py-1 text-center text-[10px] font-medium text-white/20"
+                                        >Modelo</th
+                                    >
+                                    <th
+                                        class="px-2 py-1 text-center text-[10px] font-medium text-white/20"
+                                        >Textura</th
+                                    >
+                                    <th
+                                        class="px-2 py-1 text-center text-[10px] font-medium text-white/20"
+                                        >Modelo</th
+                                    >
+                                    <th
+                                        class="px-2 py-1 text-center text-[10px] font-medium text-white/20"
+                                        >Textura</th
+                                    >
+                                </tr>
+                            </thead>
+                            <tbody id="clothing-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ── Modal: New Set ────────────────────────────── -->
+                <dialog id="modal-set" class="uc-modal">
+                    <div class="uc-modal-box">
+                        <h3 class="mb-4 text-lg font-bold text-white/90">
+                            Nuevo conjunto
+                        </h3>
+                        <div class="flex flex-col gap-3">
+                            <div>
+                                <label class="uc-label">Nombre</label>
+                                <input
+                                    id="ms-name"
+                                    type="text"
+                                    class="uc-input w-full"
+                                    placeholder="Ej: TAC, Instructores RTD..."
+                                />
+                            </div>
+                            <div class="flex gap-3">
+                                <div class="flex-1">
+                                    <label class="uc-label">Tipo</label>
+                                    <select
+                                        id="ms-type"
+                                        class="uc-select w-full">
+                                        <option value="normal"
+                                            >Normal (sin rangos)</option
+                                        >
+                                        <option value="ranked"
+                                            >Con rangos</option
+                                        >
+                                    </select>
+                                </div>
+                                <div class="w-[90px]">
+                                    <label class="uc-label">Antibalas %</label>
+                                    <input
+                                        id="ms-bulletproof"
+                                        type="number"
+                                        min="0"
+                                        max="100"
+                                        value="0"
+                                        class="uc-input w-full text-center"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-5 flex justify-end gap-2">
+                            <button id="ms-cancel" class="uc-btn-ghost"
+                                >Cancelar</button
+                            >
+                            <button id="ms-save" class="uc-btn-primary"
+                                >Crear conjunto</button
+                            >
+                        </div>
+                    </div>
+                </dialog>
+                <!-- ── Modal: Lua Export ──────────────────────────── -->
+                <dialog id="modal-lua" class="uc-modal">
+                    <div class="uc-modal-box">
+                        <div class="mb-3.5 flex items-center justify-between">
+                            <h3 class="text-lg font-bold text-white/90">
+                                Exportar Lua
+                            </h3>
+                            <div class="flex gap-2">
+                                <button
+                                    id="lua-copy"
+                                    class="uc-btn-primary text-xs"
+                                    >Copiar</button
+                                >
+                                <button
+                                    id="lua-close"
+                                    class="uc-btn-ghost text-xs">Cerrar</button
+                                >
+                            </div>
+                        </div>
+                        <pre
+                            id="lua-output"
+                            class="uc-pre max-h-[420px] overflow-auto">
+                        </pre>
+                    </div>
+                </dialog>
+
+                <!-- ── Modal: Share ──────────────────────────────── -->
+                <dialog id="modal-share" class="uc-modal">
+                    <div class="uc-modal-box">
+                        <h3 class="mb-2 text-lg font-bold text-white/90">
+                            Compartir conjunto
+                        </h3>
+                        <p class="mb-3 text-xs text-white/40">
+                            Comparte este enlace. Cualquiera que lo abra podrá
+                            importar el conjunto.
+                        </p>
+                        <input
+                            id="share-url"
+                            type="text"
+                            readonly
+                            class="uc-input box-border w-full font-mono text-[11px]"
+                        />
+                        <div class="mt-3.5 flex justify-end gap-2">
+                            <button id="share-copy" class="uc-btn-primary"
+                                >Copiar enlace</button
+                            >
+                            <button id="share-close" class="uc-btn-ghost"
+                                >Cerrar</button
+                            >
+                        </div>
+                    </div>
+                </dialog>
+
+                <!-- ── Modal: Import ──────────────────────────────── -->
+                <dialog id="modal-import" class="uc-modal">
+                    <div class="uc-modal-box">
+                        <h3 class="mb-2 text-lg font-bold text-white/90">
+                            Importar conjunto
+                        </h3>
+                        <p
+                            id="import-desc"
+                            class="mb-4 text-[13px] text-white/50">
+                        </p>
+                        <div class="flex justify-end gap-2">
+                            <button id="import-cancel" class="uc-btn-ghost"
+                                >Cancelar</button
+                            >
+                            <button id="import-confirm" class="uc-btn-primary"
+                                >Importar</button
+                            >
+                        </div>
+                    </div>
+                </dialog>
+            </div>
+        </div>
+    </div>
+</ToolLayout>
+
+<script>
+    // Configurador Ropa Masterjob — App Logic
+    const SLOTS = [
+        { k: "mask", lua: "mask", l: "Máscara" },
+        {
+            k: "accessory",
+            lua: "accessory",
+            l: "Bufanda",
+        },
+        { k: "torso2", lua: "torso2", l: "Chaqueta" },
+        { k: "tshirt", lua: "t-shirt", l: "Camiseta" },
+        { k: "vest", lua: "vest", l: "Chaleco" },
+        { k: "bag", lua: "bag", l: "Bolsa" },
+        { k: "arms", lua: "arms", l: "Brazos" },
+        { k: "pants", lua: "pants", l: "Piernas" },
+        { k: "shoes", lua: "shoes", l: "Zapatos" },
+        {
+            k: "decals",
+            lua: "decals",
+            l: "Calcomanías",
+        },
+        { k: "hat", lua: "hat", l: "Gorras" },
+        { k: "glasses", lua: "glasses", l: "Gafas" },
+        { k: "ear", lua: "ear", l: "Aretes" },
+        { k: "watch", lua: "watch", l: "Relojes" },
+        {
+            k: "bracelet",
+            lua: "bracelet",
+            l: "Brazaletes",
+        },
+    ];
+
+    interface SlotData {
+        model: number;
+        texture: number;
+    }
+
+    type SlotRecord = Record<string, SlotData | null>;
+
+    interface RankOverride {
+        male: SlotRecord;
+        female: SlotRecord;
+    }
+
+    interface RankInfo {
+        number: number;
+        label: string;
+    }
+
+    interface SetData {
+        id: string;
+        name: string;
+        type: "normal" | "ranked";
+        bulletproof: number;
+        male: SlotRecord;
+        female: SlotRecord;
+        ranks: RankInfo[];
+        rankOverrides: Record<string, RankOverride>;
+        folderId?: string | null;
+    }
+
+    interface FolderData {
+        id: string;
+        name: string;
+    }
+
+    const LS_KEY = "mj_uc_v1";
+
+    const state: {
+        sets: SetData[];
+        folders: FolderData[];
+        id: string | null;
+        tab: string;
+        activeGender: "male" | "female";
+    } = {
+        sets: [],
+        folders: [],
+        id: null,
+        tab: "base",
+        activeGender: "male",
+    };
+
+    // ── Storage ──────────────────────────────────────────────────────────────────
+    function loadSets() {
+        try {
+            const data = JSON.parse(localStorage.getItem(LS_KEY) || "{}");
+            if (Array.isArray(data)) {
+                // Legacy migration: data was just an array of sets
+                state.sets = data;
+                state.folders = [];
+            } else {
+                state.sets = data.sets || [];
+                state.folders = data.folders || [];
+            }
+        } catch {
+            state.sets = [];
+            state.folders = [];
+        }
+    }
+    function saveSets() {
+        localStorage.setItem(
+            LS_KEY,
+            JSON.stringify({ sets: state.sets, folders: state.folders }),
+        );
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────────
+    function uid() {
+        return crypto.randomUUID();
+    }
+    function emptySlots(): SlotRecord {
+        const s: SlotRecord = {};
+        SLOTS.forEach(({ k }) => (s[k] = null));
+        return s;
+    }
+    function getSet(): SetData | null {
+        return state.sets.find((s) => s.id === state.id) || null;
+    }
+    function cloneSlots(src: SlotRecord | undefined): SlotRecord {
+        return src ? JSON.parse(JSON.stringify(src)) : emptySlots();
+    }
+
+    function getTabSlots(set: SetData, gender: "male" | "female"): SlotRecord {
+        if (state.tab === "base") return set[gender] || emptySlots();
+        return set.rankOverrides?.[state.tab]?.[gender] || emptySlots();
+    }
+
+    function setTabSlot(
+        set: SetData,
+        gender: "male" | "female",
+        key: string,
+        val: SlotData | null,
+    ) {
+        if (state.tab === "base") {
+            if (!set[gender]) set[gender] = emptySlots();
+            set[gender][key] = val;
+        } else {
+            if (!set.rankOverrides) set.rankOverrides = {};
+            if (!set.rankOverrides[state.tab])
+                set.rankOverrides[state.tab] = {
+                    male: emptySlots(),
+                    female: emptySlots(),
+                };
+            set.rankOverrides[state.tab][gender][key] = val;
+        }
+    }
+
+    // ── Paste parser ──────────────────────────────────────────────────────────────
+    function parsePaste(text: string): (SlotData | null)[] {
+        // Remove trailing newlines to avoid empty cells at the end
+        text = text.replace(/[\r\n]+$/, "");
+        const cells = text.split(/\t|\r?\n/);
+        return SLOTS.map((_slot, i) => {
+            const cell = (cells[i] || "").trim();
+            if (!cell || !/^\d/.test(cell)) return null;
+            if (cell.includes("-")) {
+                const parts = cell.split("-");
+                return {
+                    model: parseInt(parts[0], 10) || 0,
+                    texture: parseInt(parts[1], 10) || 0,
+                };
+            }
+            return {
+                model: parseInt(cell, 10) || 0,
+                texture: 0,
+            };
+        });
+    }
+
+    // ── Lua Export ────────────────────────────────────────────────────────────────
+    function slotsToLua(slots: SlotRecord | undefined, indent: number): string {
+        if (!slots) return "{}";
+        const pad = " ".repeat(indent);
+        const lines: string[] = [];
+        SLOTS.forEach(({ k, lua }) => {
+            const v = slots[k];
+            if (v === null || v === undefined) return; // empty → skip
+            lines.push(
+                `${pad}["${lua}"] = { item = ${v.model}, texture = ${v.texture} },`,
+            );
+        });
+        if (!lines.length) return "{}";
+        return `{\n${lines.join("\n")}\n${" ".repeat(indent - 4)}}`;
+    }
+
+    function exportLua(set: SetData): string {
+        const bp = set.bulletproof ?? 0;
+        const label = set.name || "Uniforme";
+        if (set.type === "normal") {
+            const mLua = slotsToLua(set.male, 8);
+            const fLua = slotsToLua(set.female, 8);
+            return `{\n    bulletproof = ${bp},\n    label = "${label}",\n    male = ${mLua},\n    female = ${fLua}\n},`;
+        }
+        // ranked
+        const bm = slotsToLua(set.male, 12);
+        const bf = slotsToLua(set.female, 12);
+        let ranksLua = "";
+        const sorted = (set.ranks || [])
+            .slice()
+            .sort((a, b) => a.number - b.number);
+        sorted.forEach((r) => {
+            const ro = set.rankOverrides?.[String(r.number)];
+            if (!ro) return;
+            const rm = slotsToLua(ro.male, 20);
+            const rf = slotsToLua(ro.female, 20);
+            const hasM = rm !== "{}",
+                hasF = rf !== "{}";
+            if (!hasM && !hasF) return;
+            ranksLua += `\n                [${r.number}] = {`;
+            if (hasM) ranksLua += `\n                    male   = ${rm},`;
+            if (hasF) ranksLua += `\n                    female = ${rf},`;
+            ranksLua += `\n                },`;
+        });
+        return `{\n    bulletproof = ${bp},\n    label = "${label}",\n    base = {\n        male = ${bm},\n        female = ${bf}\n    },\n    ranks = {${ranksLua}\n    }\n},`;
+    }
+
+    // ── Base64 share ──────────────────────────────────────────────────────────────
+    function encodeSet(set: SetData): string {
+        const json = JSON.stringify(set);
+        const bytes = new TextEncoder().encode(json);
+        let binString = "";
+        for (let i = 0; i < bytes.length; i++) {
+            binString += String.fromCodePoint(bytes[i]);
+        }
+        return btoa(binString);
+    }
+    function decodeSet(str: string): SetData | null {
+        try {
+            const binString = atob(str);
+            const bytes = new Uint8Array(binString.length);
+            for (let i = 0; i < binString.length; i++) {
+                bytes[i] = binString.charCodeAt(i);
+            }
+            return JSON.parse(new TextDecoder().decode(bytes));
+        } catch {
+            return null;
+        }
+    }
+
+    // ── DOM helpers ───────────────────────────────────────────────────────────────
+    function el<T extends HTMLElement = HTMLElement>(id: string): T | null {
+        return document.getElementById(id) as T | null;
+    }
+
+    // ── Render: set list ──────────────────────────────────────────────────────────
+    function renderSetList() {
+        const list = el("set-list");
+        if (!list) return;
+        if (!state.sets.length && !state.folders.length) {
+            list.innerHTML =
+                '<li class="text-xs text-white/20 px-2 py-4 text-center">Sin conjuntos ni carpetas</li>';
+            return;
+        }
+
+        let html = "";
+
+        // Render folders first
+        state.folders.forEach((f) => {
+            const fSets = state.sets.filter((s) => s.folderId === f.id);
+            html += `<li class="group/folder mb-2">
+                <div class="flex items-center justify-between px-2 py-1 text-xs font-bold text-white/60 bg-white/5 rounded">
+                    <span class="truncate pr-2">📁 ${f.name}</span>
+                    <div class="hidden group-hover/folder:flex gap-1 shrink-0">
+                        <button class="uc-icon-btn text-[10px] !p-0.5" data-action="share-folder" data-id="${f.id}" title="Compartir carpeta">🔗</button>
+                        <button class="uc-icon-btn text-red-400/60 hover:text-red-400 text-[10px] !p-0.5" data-action="delete-folder" data-id="${f.id}" title="Eliminar carpeta">✕</button>
+                    </div>
+                </div>
+                <ul class="pl-2 mt-1 list-none flex-col gap-0.5 flex">`;
+
+            fSets.forEach((s) => {
+                const active = s.id === state.id;
+                html += `<li class="group uc-set-item${active ? " active" : ""}" data-id="${s.id}">
+                    <span class="flex-1 truncate text-sm font-medium">${s.name || "Sin nombre"}</span>
+                    <span class="text-[10px] px-1.5 py-0.5 rounded ${s.type === "ranked" ? "text-blue-400 bg-blue-400/10" : "text-amber-400 bg-amber-400/10"}">${s.type === "ranked" ? "Rangos" : "Normal"}</span>
+                    <div class="uc-set-actions">
+                        <button class="uc-icon-btn" data-action="export" data-id="${s.id}" title="Exportar Lua">⬇</button>
+                        <button class="uc-icon-btn" data-action="share" data-id="${s.id}" title="Compartir">🔗</button>
+                        <button class="uc-icon-btn text-red-400/60 hover:text-red-400" data-action="delete" data-id="${s.id}" title="Eliminar">✕</button>
+                    </div>
+                </li>`;
+            });
+            if (fSets.length === 0) {
+                html += `<li class="text-[10px] text-white/20 px-2 py-1 italic">Carpeta vacía</li>`;
+            }
+            html += `</ul></li>`;
+        });
+
+        // Render root sets
+        const rootSets = state.sets.filter((s) => !s.folderId);
+        if (rootSets.length > 0 && state.folders.length > 0) {
+            html += `<div class="mt-2 mb-1 px-2 text-[10px] font-bold text-white/30 uppercase tracking-wider">Raíz</div>`;
+        }
+        rootSets.forEach((s) => {
+            const active = s.id === state.id;
+            html += `<li class="group uc-set-item${active ? " active" : ""}" data-id="${s.id}">
+                <span class="flex-1 truncate text-sm font-medium">${s.name || "Sin nombre"}</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded ${s.type === "ranked" ? "text-blue-400 bg-blue-400/10" : "text-amber-400 bg-amber-400/10"}">${s.type === "ranked" ? "Rangos" : "Normal"}</span>
+                <div class="uc-set-actions">
+                    <button class="uc-icon-btn" data-action="export" data-id="${s.id}" title="Exportar Lua">⬇</button>
+                    <button class="uc-icon-btn" data-action="share" data-id="${s.id}" title="Compartir">🔗</button>
+                    <button class="uc-icon-btn text-red-400/60 hover:text-red-400" data-action="delete" data-id="${s.id}" title="Eliminar">✕</button>
+                </div>
+            </li>`;
+        });
+
+        list.innerHTML = html;
+    }
+
+    // ── Render: copy-from dropdowns ───────────────────────────────────────────────
+    function renderCopyFrom() {
+        const set = getSet();
+        const srcSet = el<HTMLSelectElement>("copy-src-set");
+        const srcTab = el("copy-src-tab");
+        if (!srcSet || !srcTab || !set) return;
+        srcSet.innerHTML = state.sets
+            .map(
+                (s) =>
+                    `<option value="${s.id}">${s.name || "Sin nombre"}</option>`,
+            )
+            .join("");
+        const updateTabs = () => {
+            const src = state.sets.find((s) => s.id === srcSet.value);
+            if (!src) return;
+            const opts = ['<option value="base">Base</option>'];
+            if (src.type === "ranked") {
+                (src.ranks || []).forEach((r) => {
+                    opts.push(
+                        `<option value="${r.number}">Rango ${r.number}${r.label ? " — " + r.label : ""}</option>`,
+                    );
+                });
+            }
+            srcTab.innerHTML = opts.join("");
+        };
+        srcSet.addEventListener("change", updateTabs);
+        updateTabs();
+    }
+
+    // ── Render: tab bar ───────────────────────────────────────────────────────────
+    function renderTabs(set: SetData) {
+        const tabs = el("rank-tabs");
+        if (!tabs) return;
+        const sorted = (set.ranks || [])
+            .slice()
+            .sort((a, b) => a.number - b.number);
+        tabs.innerHTML =
+            `<button class="uc-tab${state.tab === "base" ? " active" : ""}" data-tab="base">Base</button>` +
+            sorted
+                .map((r) => {
+                    const key = String(r.number);
+                    return `<button class="uc-tab${state.tab === key ? " active" : ""}" data-tab="${key}">
+${r.label ? r.label : "Rango " + r.number}
+<span class="uc-tab-del" data-rank="${r.number}" title="Eliminar rango">✕</span>
+</button>`;
+                })
+                .join("");
+    }
+
+    // ── Render: clothing table ────────────────────────────────────────────────────
+    function renderTable(set: SetData) {
+        const tbody = el("clothing-tbody");
+        if (!tbody) return;
+        const mSlots = getTabSlots(set, "male");
+        const fSlots = getTabSlots(set, "female");
+        tbody.innerHTML = SLOTS.map(({ k, l }) => {
+            const mv = mSlots[k],
+                fv = fSlots[k];
+            const mm = mv !== null ? mv.model : "",
+                mt = mv !== null ? mv.texture : "";
+            const fm = fv !== null ? fv.model : "",
+                ft = fv !== null ? fv.texture : "";
+            return `<tr class="uc-row" data-slot="${k}">
+<td class="py-1.5 px-3 text-xs text-white/50 font-medium whitespace-nowrap">${l}</td>
+<td class="py-1 px-1"><input class="uc-num" type="number" min="0" data-slot="${k}" data-gender="male" data-field="model" value="${mm}" placeholder="—" /></td>
+<td class="py-1 px-1"><input class="uc-num" type="number" min="0" data-slot="${k}" data-gender="male" data-field="texture" value="${mt}" placeholder="—" /></td>
+<td class="py-1 px-1"><input class="uc-num" type="number" min="0" data-slot="${k}" data-gender="female" data-field="model" value="${fm}" placeholder="—" /></td>
+<td class="py-1 px-1"><input class="uc-num" type="number" min="0" data-slot="${k}" data-gender="female" data-field="texture" value="${ft}" placeholder="—" /></td>
+</tr>`;
+        }).join("");
+    }
+
+    // ── Render: main panel ────────────────────────────────────────────────────
+    function renderMain() {
+        const set = getSet();
+        const empty = el("main-empty");
+        const editor = el("main-editor");
+        if (!set) {
+            if (empty) {
+                empty.classList.remove("hidden");
+                empty.classList.add("flex");
+            }
+            if (editor) {
+                editor.classList.add("hidden");
+                editor.classList.remove("flex");
+            }
+            return;
+        }
+        if (empty) {
+            empty.classList.add("hidden");
+            empty.classList.remove("flex");
+        }
+        if (editor) {
+            editor.classList.remove("hidden");
+            editor.classList.add("flex");
+        }
+        const nameIn = el<HTMLInputElement>("set-name");
+        if (nameIn) nameIn.value = set.name || "";
+
+        const folderIn = el<HTMLSelectElement>("set-folder");
+        if (folderIn) {
+            folderIn.innerHTML =
+                '<option value="">(Ninguna)</option>' +
+                state.folders
+                    .map((f) => `<option value="${f.id}">${f.name}</option>`)
+                    .join("");
+            folderIn.value = set.folderId || "";
+        }
+
+        const bpIn = el<HTMLInputElement>("set-bulletproof");
+        if (bpIn) bpIn.value = String(set.bulletproof ?? 0);
+        const typeIn = el<HTMLSelectElement>("set-type");
+        if (typeIn) typeIn.value = set.type || "normal";
+        const rankMgmt = el("rank-mgmt");
+        if (rankMgmt) {
+            if (set.type === "ranked") {
+                rankMgmt.classList.remove("hidden");
+            } else {
+                rankMgmt.classList.add("hidden");
+            }
+        }
+        if (set.type === "ranked") renderTabs(set);
+        else state.tab = "base";
+        renderTable(set);
+        renderCopyFrom();
+    }
+
+    // ── Render: full ─────────────────────────────────────────────────────────────
+    function render() {
+        renderSetList();
+        renderMain();
+    }
+
+    // ── Event: clothing inputs ────────────────────────────────────────────────────
+    document.addEventListener("change", (e) => {
+        const target = e.target as HTMLElement;
+        const inp = target.closest(".uc-num") as HTMLInputElement | null;
+        if (!inp) return;
+        const set = getSet();
+        if (!set) return;
+        const slot = inp.dataset.slot as string;
+        const gender = inp.dataset.gender as "male" | "female";
+        const field = inp.dataset.field as "model" | "texture";
+        const raw = inp.value.trim();
+        const cur = getTabSlots(set, gender)[slot];
+        let entry = cur ? { ...cur } : { model: 0, texture: 0 };
+        if (raw === "") {
+            setTabSlot(set, gender, slot, null); // empty → not exported
+        } else {
+            entry[field] = parseInt(raw, 10) || 0;
+            setTabSlot(set, gender, slot, entry);
+        }
+        saveSets();
+    });
+
+    // ── Global Paste and Gender Selection ─────────────────────────────────────────
+    document.addEventListener("focusin", (e) => {
+        const target = e.target as HTMLElement;
+        const gender = target.dataset?.gender;
+        if (gender === "male" || gender === "female") {
+            state.activeGender = gender;
+        }
+    });
+
+    document.addEventListener("click", (e) => {
+        const target = e.target as HTMLElement;
+        const th = target.closest("th[data-gender-header]");
+        if (th) {
+            const gender = (th as HTMLElement).dataset.genderHeader;
+            if (gender === "male" || gender === "female") {
+                state.activeGender = gender as "male" | "female";
+            }
+        }
+    });
+
+    document.addEventListener("paste", (e) => {
+        const text = e.clipboardData?.getData("text") || "";
+        // Process only if the pasted content has tabs or newlines (spreadsheet format)
+        if (!text.includes("\t") && !text.includes("\n")) return;
+
+        const set = getSet();
+        if (!set) return;
+
+        const results = parsePaste(text);
+        let applied = 0;
+        const gender = state.activeGender;
+
+        results.forEach((val, i) => {
+            if (val === null) return;
+            const key = SLOTS[i].k;
+            setTabSlot(set, gender, key, {
+                model: val.model,
+                texture: val.texture,
+            });
+            applied++;
+        });
+
+        if (applied > 0) {
+            e.preventDefault();
+            saveSets();
+            renderTable(set);
+        }
+    });
+
+    // ── Event wiring ──────────────────────────────────────────────────────────────
+    function wireEvents() {
+        // New set
+        el("btn-new-set")?.addEventListener("click", () => {
+            const id = uid();
+            state.sets.push({
+                id,
+                name: "Nuevo conjunto",
+                type: "normal",
+                bulletproof: 0,
+                male: emptySlots(),
+                female: emptySlots(),
+                ranks: [],
+                rankOverrides: {},
+                folderId: null,
+            });
+            state.id = id;
+            state.tab = "base";
+            saveSets();
+            render();
+        });
+
+        el("btn-new-folder")?.addEventListener("click", () => {
+            const name = prompt("Nombre de la carpeta:");
+            if (!name) return;
+            state.folders.push({ id: uid(), name });
+            saveSets();
+            renderSetList();
+        });
+
+        // Set list clicks (delegated)
+        el("set-list")?.addEventListener("click", (e: Event) => {
+            const btn = (e.target as HTMLElement).closest(
+                "[data-action]",
+            ) as HTMLButtonElement | null;
+            if (btn) {
+                const { action, id } = btn.dataset;
+
+                if (action === "share-folder") {
+                    const folder = state.folders.find((f) => f.id === id);
+                    if (!folder) return;
+                    const fSets = state.sets.filter(
+                        (s) => s.folderId === folder.id,
+                    );
+                    const data = {
+                        type: "folder",
+                        name: folder.name,
+                        sets: fSets,
+                    };
+                    const encoded = btoa(
+                        encodeURIComponent(JSON.stringify(data)),
+                    );
+                    const url = `${location.origin}${location.pathname}?f=${encoded}`;
+                    const shareUrl = el<HTMLInputElement>("share-url");
+                    if (shareUrl) shareUrl.value = url;
+                    el<HTMLDialogElement>("modal-share")?.showModal();
+                    return;
+                }
+
+                if (action === "delete-folder") {
+                    if (
+                        !confirm(
+                            "¿Eliminar carpeta? Los conjuntos volverán a la raíz.",
+                        )
+                    )
+                        return;
+                    state.sets.forEach((s) => {
+                        if (s.folderId === id) s.folderId = null;
+                    });
+                    state.folders = state.folders.filter((f) => f.id !== id);
+                    saveSets();
+                    render();
+                    return;
+                }
+
+                if (action === "delete") {
+                    if (!confirm("¿Eliminar este conjunto?")) return;
+                    state.sets = state.sets.filter((s) => s.id !== id);
+                    if (state.id === id) {
+                        state.id = null;
+                        state.tab = "base";
+                    }
+                    saveSets();
+                    render();
+                    return;
+                }
+                if (action === "export") {
+                    const s = state.sets.find((x) => x.id === id);
+                    if (!s) return;
+                    const luaOutput = el<HTMLDivElement>("lua-output");
+                    if (luaOutput) luaOutput.textContent = exportLua(s);
+                    el<HTMLDialogElement>("modal-lua")?.showModal();
+                    return;
+                }
+                if (action === "share") {
+                    const s = state.sets.find((x) => x.id === id);
+                    if (!s) return;
+                    const url = `${location.origin}${location.pathname}?s=${encodeSet(s)}`;
+                    const shareUrl = el<HTMLInputElement>("share-url");
+                    if (shareUrl) shareUrl.value = url;
+                    el<HTMLDialogElement>("modal-share")?.showModal();
+                    return;
+                }
+                return;
+            }
+            const item = (e.target as HTMLElement).closest(
+                ".uc-set-item",
+            ) as HTMLElement | null;
+            if (item && !(e.target as HTMLElement).closest("[data-action]")) {
+                const id = item.dataset.id;
+                if (id) {
+                    state.id = id;
+                }
+                state.tab = "base";
+                render();
+            }
+        });
+
+        // Header inputs
+        el("set-folder")?.addEventListener("change", () => {
+            const s = getSet();
+            if (s) {
+                s.folderId =
+                    (el("set-folder") as HTMLSelectElement).value || null;
+                saveSets();
+                renderSetList();
+            }
+        });
+
+        el("set-name")?.addEventListener("input", () => {
+            const s = getSet();
+            if (s) {
+                s.name = (el("set-name") as HTMLInputElement).value;
+                saveSets();
+                renderSetList();
+            }
+        });
+        el("set-bulletproof")?.addEventListener("change", () => {
+            const s = getSet();
+            if (s) {
+                s.bulletproof =
+                    parseInt(
+                        (el("set-bulletproof") as HTMLInputElement).value,
+                        10,
+                    ) || 0;
+                saveSets();
+            }
+        });
+        el("set-type")?.addEventListener("change", () => {
+            const s = getSet();
+            if (!s) return;
+            s.type = (el<HTMLSelectElement>("set-type")?.value || "") as
+                | "normal"
+                | "ranked";
+            if (s.type === "normal") state.tab = "base";
+            saveSets();
+            renderMain();
+        });
+
+        // Rank tabs (delegated)
+        el("rank-tabs")?.addEventListener("click", (e) => {
+            const del = (e.target as HTMLElement).closest(".uc-tab-del");
+            if (del) {
+                e.stopPropagation();
+                const num = parseInt((del as HTMLElement).dataset.rank!, 10);
+                const s = getSet();
+                if (!s) return;
+                s.ranks = s.ranks.filter((r) => r.number !== num);
+                if (s.rankOverrides) delete s.rankOverrides[String(num)];
+                if (state.tab === String(num)) state.tab = "base";
+                saveSets();
+                renderMain();
+                return;
+            }
+            const tab = (e.target as HTMLElement).closest(
+                ".uc-tab",
+            ) as HTMLElement;
+            if (tab) {
+                state.tab = tab.dataset.tab || "";
+                renderMain();
+            }
+        });
+
+        // Add rank
+        el("btn-add-rank")?.addEventListener("click", () => {
+            const s = getSet();
+            if (!s) return;
+            const raw = prompt("Número de rango (ej: 1, 5, 10):");
+            if (!raw) return;
+            const num = parseInt(raw, 10);
+            if (isNaN(num) || num < 0) return;
+            const labelInput =
+                prompt("Etiqueta del rango (opcional, dejar vacío):") || "";
+            if (!s.ranks.find((r) => r.number === num)) {
+                s.ranks.push({
+                    number: num,
+                    label: labelInput,
+                });
+                s.ranks.sort((a, b) => a.number - b.number);
+            }
+            state.tab = String(num);
+            saveSets();
+            renderMain();
+        });
+
+        // Copy from
+        el("btn-copy-from")?.addEventListener("click", () => {
+            const set = getSet();
+            if (!set) return;
+            const srcId = (el("copy-src-set") as HTMLSelectElement).value;
+            const srcTabVal =
+                (el("copy-src-tab") as HTMLSelectElement).value || "";
+            const src = state.sets.find((s) => s.id === srcId);
+            if (!src) return;
+            let srcMale, srcFemale;
+            if (srcTabVal === "base") {
+                srcMale = src.male;
+                srcFemale = src.female;
+            } else {
+                srcMale = src.rankOverrides?.[srcTabVal]?.male;
+                srcFemale = src.rankOverrides?.[srcTabVal]?.female;
+            }
+            if (state.tab === "base") {
+                set.male = cloneSlots(srcMale);
+                set.female = cloneSlots(srcFemale);
+            } else {
+                if (!set.rankOverrides) set.rankOverrides = {};
+                if (!set.rankOverrides[state.tab])
+                    set.rankOverrides[state.tab] = {
+                        male: emptySlots(),
+                        female: emptySlots(),
+                    };
+                set.rankOverrides[state.tab].male = cloneSlots(srcMale);
+                set.rankOverrides[state.tab].female = cloneSlots(srcFemale);
+            }
+            saveSets();
+            renderTable(set);
+        });
+
+        // Export Lua button
+        el("btn-export-lua")?.addEventListener("click", () => {
+            const s = getSet();
+            if (!s) return;
+            const luaOutput = el<HTMLDivElement>("lua-output");
+            if (luaOutput) luaOutput.textContent = exportLua(s);
+            el<HTMLDialogElement>("modal-lua")?.showModal();
+        });
+        el("lua-copy")?.addEventListener("click", () => {
+            navigator.clipboard.writeText(el("lua-output")?.textContent || "");
+            const luaCopy = el("lua-copy");
+            if (luaCopy) luaCopy.textContent = "¡Copiado!";
+            setTimeout(() => {
+                const luaCopyTimeout = el("lua-copy");
+                if (luaCopyTimeout) luaCopyTimeout.textContent = "Copiar";
+            }, 1500);
+        });
+        el("lua-close")?.addEventListener("click", () =>
+            el<HTMLDialogElement>("modal-lua")?.close(),
+        );
+
+        // Share
+        el("btn-share")?.addEventListener("click", () => {
+            const s = getSet();
+            if (!s) return;
+            const url = `${location.origin}${location.pathname}?s=${encodeSet(s)}`;
+            const shareUrl = el<HTMLInputElement>("share-url");
+            if (shareUrl) shareUrl.value = url;
+            el<HTMLDialogElement>("modal-share")?.showModal();
+        });
+        el("share-copy")?.addEventListener("click", () => {
+            navigator.clipboard.writeText(
+                el<HTMLInputElement>("share-url")?.value || "",
+            );
+            const shareCopy = el("share-copy");
+            if (shareCopy) shareCopy.textContent = "¡Copiado!";
+            setTimeout(() => {
+                const shareCopyTimeout = el("share-copy");
+                if (shareCopyTimeout)
+                    shareCopyTimeout.textContent = "Copiar enlace";
+            }, 1500);
+        });
+        el("share-close")?.addEventListener("click", () =>
+            el<HTMLDialogElement>("modal-share")?.close(),
+        );
+
+        // Import URL button
+        el("btn-import-url")?.addEventListener("click", () => {
+            const raw = prompt("Pega la URL compartida:");
+            if (!raw) return;
+            tryImportFromUrl(raw);
+        });
+        el("import-cancel")?.addEventListener("click", () =>
+            el<HTMLDialogElement>("modal-import")?.close(),
+        );
+        el("import-confirm")?.addEventListener("click", () => {
+            const modalImport = el<HTMLDialogElement>("modal-import");
+            const pending = modalImport?.dataset.pending;
+            if (!pending) return;
+            const data = decodeSet(pending);
+            if (!data) return;
+            data.id = uid(); // new id to avoid collision
+            state.sets.push(data);
+            state.id = data.id;
+            state.tab = "base";
+            saveSets();
+            render();
+            el<HTMLDialogElement>("modal-import")?.close();
+        });
+    }
+
+    function tryImportFromUrl(urlStr: string) {
+        try {
+            const url = new URL(urlStr);
+            const s = url.searchParams.get("s");
+            if (!s) {
+                alert("No se encontró un conjunto en la URL.");
+                return;
+            }
+            const data = decodeSet(s);
+            if (!data || !data.name) {
+                alert("URL inválida o datos corruptos.");
+                return;
+            }
+            const importDesc = el("import-desc");
+            if (importDesc)
+                importDesc.textContent = `Importar conjunto: "${data.name}" (${data.type})?`;
+            const modalImport = el<HTMLDialogElement>("modal-import");
+            if (modalImport) {
+                modalImport.dataset.pending = s;
+                modalImport.showModal();
+            }
+        } catch {
+            alert("URL inválida.");
+        }
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────────────
+    loadSets();
+    wireEvents();
+
+    // Check URL params on load
+    (function checkUrlImport() {
+        const urlParams = new URLSearchParams(location.search);
+        const sharedSet = urlParams.get("s");
+        const sharedFolder = urlParams.get("f");
+
+        if (sharedSet) {
+            const data = decodeSet(sharedSet);
+            if (data?.name) {
+                const importDesc = el("import-desc");
+                if (importDesc)
+                    importDesc.textContent = `Importar conjunto compartido: "${data.name}" (${data.type})?`;
+                const modalImport = el<HTMLDialogElement>("modal-import");
+                if (modalImport) {
+                    modalImport.dataset.pending = sharedSet;
+                    modalImport.showModal();
+                }
+            }
+        }
+
+        if (sharedFolder) {
+            try {
+                const data = JSON.parse(decodeURIComponent(atob(sharedFolder)));
+                if (data.type === "folder") {
+                    if (
+                        confirm(
+                            `¿Importar carpeta "${data.name}" con ${data.sets.length} conjuntos?`,
+                        )
+                    ) {
+                        const newFolderId = uid();
+                        state.folders.push({
+                            id: newFolderId,
+                            name: data.name,
+                        });
+                        data.sets.forEach((s: any) => {
+                            s.id = uid();
+                            s.folderId = newFolderId;
+                            state.sets.push(s);
+                        });
+                        saveSets();
+                        render();
+                    }
+                }
+                // Clean URL
+                window.history.replaceState({}, "", window.location.pathname);
+            } catch (e) {
+                console.error("Error importing folder", e);
+            }
+        }
+    })();
+
+    if (state.sets.length) state.id = state.sets[0].id;
+    render();
+</script>
+
+<style is:global>
+    @import "../../styles/global.css";
+    /* Configurador Ropa Masterjob - Custom Elements */
+    .uc-card {
+        @apply rounded-xl border border-white/6 bg-white/2 p-4;
+    }
+    .uc-label {
+        @apply mb-1.5 block text-[11px] font-semibold tracking-wide text-white/35 uppercase;
+    }
+    .uc-input,
+    .uc-select {
+        @apply rounded-lg border border-white/8 bg-black/20 px-3 py-1.5 text-sm text-white/90 transition-all outline-none placeholder:text-white/20 focus:border-amber-500/50 focus:bg-black/40;
+    }
+    .uc-textarea {
+        @apply w-full resize-y rounded-lg border border-white/8 bg-black/20 p-3 text-sm text-white/90 transition-all outline-none placeholder:text-white/20 focus:border-amber-500/50 focus:bg-black/40;
+    }
+    .uc-btn-primary {
+        @apply cursor-pointer rounded-lg border-none bg-amber-500 px-3.5 py-1.5 text-sm font-semibold tracking-wide text-[#0d1117] transition-all hover:bg-amber-400 active:scale-95;
+    }
+    .uc-btn-accent {
+        @apply cursor-pointer rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-1.5 text-xs font-semibold tracking-wide text-blue-400 transition-all hover:bg-blue-500/20 active:scale-95;
+    }
+    .uc-btn-ghost {
+        @apply cursor-pointer rounded-lg border border-transparent bg-transparent px-3 py-1.5 text-sm font-medium text-white/50 transition-all hover:bg-white/5 hover:text-white/90 active:scale-95;
+    }
+    .uc-icon-btn {
+        @apply flex h-6 w-6 cursor-pointer items-center justify-center rounded border-none bg-transparent text-xs text-white/30 transition-all hover:bg-white/10 hover:text-white/90;
+    }
+
+    /* Modal */
+    .uc-modal {
+        @apply m-auto rounded-2xl border border-white/10 bg-[#161b22] p-0 text-white shadow-2xl shadow-black/50 backdrop:bg-black/60 backdrop:backdrop-blur-sm;
+    }
+    .uc-modal[open] {
+        animation: modalShow 0.2s ease-out forwards;
+    }
+    .uc-modal::backdrop {
+        animation: backdropShow 0.2s ease-out forwards;
+    }
+    .uc-modal-box {
+        @apply w-[420px] max-w-[90vw] p-6;
+    }
+
+    /* Set List */
+    .uc-set-item {
+        @apply flex cursor-pointer items-center gap-2 rounded-lg border border-transparent px-2.5 py-2 transition-all hover:bg-white/5;
+    }
+    .uc-set-item.active {
+        @apply border-white/10 bg-white/5;
+    }
+    .uc-set-actions {
+        @apply hidden items-center gap-0.5 group-hover:flex;
+    }
+    .uc-set-item.active .uc-set-actions {
+        @apply flex;
+    }
+
+    /* Table */
+    .uc-table {
+        @apply border-collapse text-left;
+    }
+    .uc-row:hover td {
+        @apply bg-white/5;
+    }
+    .uc-num {
+        @apply w-full min-w-[50px] rounded border border-transparent bg-transparent px-1.5 py-1 text-center text-[13px] text-white/90 transition-all outline-none hover:bg-white/5 focus:border-amber-500/50 focus:bg-black/40;
+    }
+    /* Hide number spinners */
+    .uc-num::-webkit-inner-spin-button,
+    .uc-num::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    /* Tabs */
+    .uc-tab {
+        @apply flex cursor-pointer items-center gap-1.5 rounded-md border border-white/5 bg-black/20 px-2.5 py-1 text-[11px] font-medium text-white/40 transition-all hover:bg-white/10 hover:text-white/80;
+    }
+    .uc-tab.active {
+        @apply border-amber-500/30 bg-amber-500/10 text-amber-400;
+    }
+    .uc-tab-del {
+        @apply flex h-4 w-4 items-center justify-center rounded-full bg-white/5 text-[9px] text-white/30 hover:bg-red-500/20 hover:text-red-400;
+    }
+
+    /* Pre */
+    .uc-pre {
+        @apply rounded-lg border border-white/10 bg-black/40 p-4 font-mono text-[11px] leading-relaxed text-white/70;
+    }
+
+    @keyframes modalShow {
+        from {
+            opacity: 0;
+            transform: scale(0.95) translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+    @keyframes backdropShow {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+</style>

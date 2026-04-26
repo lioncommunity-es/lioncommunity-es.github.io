@@ -131,7 +131,7 @@ function transformComponent(comp: ActionRowData): APIActionRowComponent<any> {
         type: DiscordComponentType.Button,
         label,
         style: nonLinkStyleMap[btn.style] || ButtonStyle.Primary,
-        custom_id: btn.id || `btn_${Math.random().toString(36).substr(2, 9)}`,
+        custom_id: btn.id || `btn_${Math.random().toString(36).substring(2, 11)}`,
         disabled: btn.disabled,
         emoji,
       };
@@ -210,7 +210,7 @@ function transformV2Component(
           type: 2,
           label,
           style: nonLinkStyleMap[btn.style] || ButtonStyle.Primary,
-          custom_id: btn.id || `btn_${Math.random().toString(36).substr(2, 9)}`,
+          custom_id: btn.id || `btn_${Math.random().toString(36).substring(2, 11)}`,
           disabled: btn.disabled,
           emoji,
         };
@@ -256,7 +256,7 @@ function transformV2Component(
               label,
               style: nonLinkStyleMap[acc.style] || ButtonStyle.Primary,
               custom_id:
-                acc.id || `btn_${Math.random().toString(36).substr(2, 9)}`,
+                acc.id || `btn_${Math.random().toString(36).substring(2, 11)}`,
               disabled: acc.disabled,
               emoji,
             };
