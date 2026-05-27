@@ -504,23 +504,24 @@ import ToolLayout from "@layouts/ToolLayout.astro";
     }
 
     // ── Paste parser ──────────────────────────────────────────────────────────────
-    function parsePaste(text: string): (SlotData | null)[] {
+    function parsePaste(text: string): { val: SlotData | null; hasValue: boolean }[] {
         // Remove trailing newlines to avoid empty cells at the end
         text = text.replace(/[\r\n]+$/, "");
         const cells = text.split(/\t|\r?\n/);
         return SLOTS.map((_slot, i) => {
-            const cell = (cells[i] || "").trim();
-            if (!cell || !/^\d/.test(cell)) return null;
-            if (cell.includes("-")) {
-                const parts = cell.split("-");
-                return {
-                    model: parseInt(parts[0], 10) || 0,
-                    texture: parseInt(parts[1], 10) || 0,
-                };
+            if (i >= cells.length) {
+                return { val: null, hasValue: false };
             }
+            const cell = cells[i].trim();
+            const match = cell.match(/^([+-]?\d+)(?:-([+-]?\d+))?$/);
+            if (!match) {
+                return { val: null, hasValue: true };
+            }
+            const model = parseInt(match[1], 10);
+            const texture = match[2] ? parseInt(match[2], 10) : 0;
             return {
-                model: parseInt(cell, 10) || 0,
-                texture: 0,
+                val: { model, texture },
+                hasValue: true,
             };
         });
     }
@@ -813,10 +814,10 @@ ${r.label ? r.label : "Rango " + r.number} (${r.number})
                 ft = fv !== null ? fv.texture : "";
             return `<tr class="uc-row" data-slot="${k}">
 <td class="py-1.5 px-3 text-xs text-white/50 font-medium whitespace-nowrap">${l}</td>
-<td class="py-1 px-1"><input class="uc-num" type="number" min="0" data-slot="${k}" data-gender="male" data-field="model" value="${mm}" placeholder="—" /></td>
-<td class="py-1 px-1"><input class="uc-num" type="number" min="0" data-slot="${k}" data-gender="male" data-field="texture" value="${mt}" placeholder="—" /></td>
-<td class="py-1 px-1"><input class="uc-num" type="number" min="0" data-slot="${k}" data-gender="female" data-field="model" value="${fm}" placeholder="—" /></td>
-<td class="py-1 px-1"><input class="uc-num" type="number" min="0" data-slot="${k}" data-gender="female" data-field="texture" value="${ft}" placeholder="—" /></td>
+<td class="py-1 px-1"><input class="uc-num" type="number" data-slot="${k}" data-gender="male" data-field="model" value="${mm}" placeholder="—" /></td>
+<td class="py-1 px-1"><input class="uc-num" type="number" data-slot="${k}" data-gender="male" data-field="texture" value="${mt}" placeholder="—" /></td>
+<td class="py-1 px-1"><input class="uc-num" type="number" data-slot="${k}" data-gender="female" data-field="model" value="${fm}" placeholder="—" /></td>
+<td class="py-1 px-1"><input class="uc-num" type="number" data-slot="${k}" data-gender="female" data-field="texture" value="${ft}" placeholder="—" /></td>
 </tr>`;
         }).join("");
     }
@@ -898,7 +899,8 @@ ${r.label ? r.label : "Rango " + r.number} (${r.number})
         if (raw === "") {
             setTabSlot(set, gender, slot, null); // empty → not exported
         } else {
-            entry[field] = parseInt(raw, 10) || 0;
+            const parsed = parseInt(raw, 10);
+            entry[field] = isNaN(parsed) ? 0 : parsed;
             setTabSlot(set, gender, slot, entry);
         }
         saveSets();
@@ -936,13 +938,10 @@ ${r.label ? r.label : "Rango " + r.number} (${r.number})
         let applied = 0;
         const gender = state.activeGender;
 
-        results.forEach((val, i) => {
-            if (val === null) return;
+        results.forEach((item, i) => {
+            if (!item.hasValue) return;
             const key = SLOTS[i].k;
-            setTabSlot(set, gender, key, {
-                model: val.model,
-                texture: val.texture,
-            });
+            setTabSlot(set, gender, key, item.val);
             applied++;
         });
 
