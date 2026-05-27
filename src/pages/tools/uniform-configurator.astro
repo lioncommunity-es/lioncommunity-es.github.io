@@ -733,7 +733,7 @@ import ToolLayout from "@layouts/ToolLayout.astro";
             if (src.type === "ranked") {
                 (src.ranks || []).forEach((r) => {
                     opts.push(
-                        `<option value="${r.number}">Rango ${r.number}${r.label ? " — " + r.label : ""}</option>`,
+                        `<option value="${r.number}">${r.label ? r.label : "Rango " + r.number} (${r.number})</option>`,
                     );
                 });
             }
@@ -756,7 +756,7 @@ import ToolLayout from "@layouts/ToolLayout.astro";
                 .map((r) => {
                     const key = String(r.number);
                     return `<button class="uc-tab${state.tab === key ? " active" : ""}" data-tab="${key}">
-${r.label ? r.label : "Rango " + r.number}
+${r.label ? r.label : "Rango " + r.number} (${r.number})
 <span class="uc-tab-del" data-rank="${r.number}" title="Eliminar rango">✕</span>
 </button>`;
                 })
@@ -1063,6 +1063,15 @@ ${r.label ? r.label : "Rango " + r.number}
                 const num = parseInt((del as HTMLElement).dataset.rank!, 10);
                 const s = getSet();
                 if (!s) return;
+                
+                const rankObj = s.ranks.find((r) => r.number === num);
+                const rankLabel = rankObj ? (rankObj.label ? `${rankObj.label} (${rankObj.number})` : `Rango ${rankObj.number}`) : `Rango ${num}`;
+                const uniformName = s.name || "Sin nombre";
+                
+                if (!confirm(`¿Seguro que quiere eliminar el rango ${rankLabel} del uniforme ${uniformName}?`)) {
+                    return;
+                }
+                
                 s.ranks = s.ranks.filter((r) => r.number !== num);
                 if (s.rankOverrides) delete s.rankOverrides[String(num)];
                 if (state.tab === String(num)) state.tab = "base";
@@ -1352,6 +1361,12 @@ ${r.label ? r.label : "Rango " + r.number}
             }
         }
     })();
+
+    // Move context menu to document body to ensure fixed positioning works correctly
+    const ctxMenu = el("uc-context-menu");
+    if (ctxMenu) {
+        document.body.appendChild(ctxMenu);
+    }
 
     if (state.sets.length) state.id = state.sets[0].id;
     render();
