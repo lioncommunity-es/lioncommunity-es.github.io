@@ -112,6 +112,9 @@ import ToolLayout from "@layouts/ToolLayout.astro";
                         <button id="btn-share" class="uc-btn-ghost"
                             >🔗 Compartir</button
                         >
+                        <button id="btn-duplicate" class="uc-btn-ghost"
+                            >👥 Duplicar</button
+                        >
                     </div>
 
                     <!-- Rank management -->
@@ -550,6 +553,25 @@ import ToolLayout from "@layouts/ToolLayout.astro";
         return `{\n    bulletproof = ${bp},\n    label = "${label}",\n    base = {\n        male = ${bm},\n        female = ${bf}\n    },\n    ranks = {${ranksLua}\n    }\n},`;
     }
 
+    function duplicateSet(set: SetData) {
+        const duplicated: SetData = JSON.parse(JSON.stringify(set));
+        duplicated.id = uid();
+        duplicated.name = `${set.name} - Copia`;
+        
+        // Find position of original set and insert duplicate right after
+        const originalIndex = state.sets.findIndex((s) => s.id === set.id);
+        if (originalIndex !== -1) {
+            state.sets.splice(originalIndex + 1, 0, duplicated);
+        } else {
+            state.sets.push(duplicated);
+        }
+        
+        state.id = duplicated.id;
+        state.tab = "base";
+        saveSets();
+        render();
+    }
+
     // ── Base64 share ──────────────────────────────────────────────────────────────
     function encodeSet(set: SetData): string {
         const json = JSON.stringify(set);
@@ -609,6 +631,7 @@ import ToolLayout from "@layouts/ToolLayout.astro";
                     <span class="flex-1 truncate text-sm font-medium">${s.name || "Sin nombre"}</span>
                     <span class="text-[10px] px-1.5 py-0.5 rounded ${s.type === "ranked" ? "text-blue-400 bg-blue-400/10" : "text-amber-400 bg-amber-400/10"}">${s.type === "ranked" ? "Rangos" : "Normal"}</span>
                     <div class="uc-set-actions">
+                        <button class="uc-icon-btn" data-action="duplicate" data-id="${s.id}" title="Duplicar">👥</button>
                         <button class="uc-icon-btn" data-action="export" data-id="${s.id}" title="Exportar Lua">⬇</button>
                         <button class="uc-icon-btn" data-action="share" data-id="${s.id}" title="Compartir">🔗</button>
                         <button class="uc-icon-btn text-red-400/60 hover:text-red-400" data-action="delete" data-id="${s.id}" title="Eliminar">✕</button>
@@ -632,6 +655,7 @@ import ToolLayout from "@layouts/ToolLayout.astro";
                 <span class="flex-1 truncate text-sm font-medium">${s.name || "Sin nombre"}</span>
                 <span class="text-[10px] px-1.5 py-0.5 rounded ${s.type === "ranked" ? "text-blue-400 bg-blue-400/10" : "text-amber-400 bg-amber-400/10"}">${s.type === "ranked" ? "Rangos" : "Normal"}</span>
                 <div class="uc-set-actions">
+                    <button class="uc-icon-btn" data-action="duplicate" data-id="${s.id}" title="Duplicar">👥</button>
                     <button class="uc-icon-btn" data-action="export" data-id="${s.id}" title="Exportar Lua">⬇</button>
                     <button class="uc-icon-btn" data-action="share" data-id="${s.id}" title="Compartir">🔗</button>
                     <button class="uc-icon-btn text-red-400/60 hover:text-red-400" data-action="delete" data-id="${s.id}" title="Eliminar">✕</button>
@@ -932,6 +956,13 @@ ${r.label ? r.label : "Rango " + r.number}
                     render();
                     return;
                 }
+                if (action === "duplicate") {
+                    const s = state.sets.find((x) => x.id === id);
+                    if (s) {
+                        duplicateSet(s);
+                    }
+                    return;
+                }
                 if (action === "export") {
                     const s = state.sets.find((x) => x.id === id);
                     if (!s) return;
@@ -1114,6 +1145,14 @@ ${r.label ? r.label : "Rango " + r.number}
             const shareUrl = el<HTMLInputElement>("share-url");
             if (shareUrl) shareUrl.value = url;
             el<HTMLDialogElement>("modal-share")?.showModal();
+        });
+
+        // Duplicate active set button
+        el("btn-duplicate")?.addEventListener("click", () => {
+            const s = getSet();
+            if (s) {
+                duplicateSet(s);
+            }
         });
         el("share-copy")?.addEventListener("click", () => {
             navigator.clipboard.writeText(
