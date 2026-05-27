@@ -332,6 +332,25 @@ import ToolLayout from "@layouts/ToolLayout.astro";
                         </div>
                     </div>
                 </dialog>
+
+                <!-- Context Menu -->
+                <div
+                    id="uc-context-menu"
+                    class="hidden fixed z-50 min-w-[140px] flex-col rounded-xl border border-white/8 bg-black/85 backdrop-blur-md p-1.5 shadow-2xl shadow-black/80 transition-all duration-150 animate-[menuShow_0.12s_ease-out]">
+                    <button class="uc-menu-item" data-menu-action="duplicate">
+                        <span class="mr-2 text-xs">👥</span> Duplicar
+                    </button>
+                    <button class="uc-menu-item" data-menu-action="export">
+                        <span class="mr-2 text-xs">⬇</span> Exportar Lua
+                    </button>
+                    <button class="uc-menu-item" data-menu-action="share">
+                        <span class="mr-2 text-xs">🔗</span> Compartir
+                    </button>
+                    <div class="my-1 border-t border-white/5"></div>
+                    <button class="uc-menu-item text-red-400 hover:bg-red-500/10 hover:text-red-400" data-menu-action="delete">
+                        <span class="mr-2 text-xs">✕</span> Eliminar
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -600,6 +619,41 @@ import ToolLayout from "@layouts/ToolLayout.astro";
         return document.getElementById(id) as T | null;
     }
 
+    let menuTargetId: string | null = null;
+    function showMenu(x: number, y: number, setId: string) {
+        const menu = el("uc-context-menu");
+        if (!menu) return;
+        menuTargetId = setId;
+        menu.classList.remove("hidden");
+        menu.classList.add("flex");
+        
+        // Prevent going off-screen
+        const menuWidth = menu.offsetWidth || 140;
+        const menuHeight = menu.offsetHeight || 150;
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        
+        let targetX = x;
+        let targetY = y;
+        if (targetX + menuWidth > windowWidth) {
+            targetX = windowWidth - menuWidth - 10;
+        }
+        if (targetY + menuHeight > windowHeight) {
+            targetY = windowHeight - menuHeight - 10;
+        }
+        
+        menu.style.left = `${targetX}px`;
+        menu.style.top = `${targetY}px`;
+    }
+    function hideMenu() {
+        const menu = el("uc-context-menu");
+        if (menu) {
+            menu.classList.add("hidden");
+            menu.classList.remove("flex");
+        }
+        menuTargetId = null;
+    }
+
     // ── Render: set list ──────────────────────────────────────────────────────────
     function renderSetList() {
         const list = el("set-list");
@@ -631,10 +685,7 @@ import ToolLayout from "@layouts/ToolLayout.astro";
                     <span class="flex-1 truncate text-sm font-medium">${s.name || "Sin nombre"}</span>
                     <span class="text-[10px] px-1.5 py-0.5 rounded ${s.type === "ranked" ? "text-blue-400 bg-blue-400/10" : "text-amber-400 bg-amber-400/10"}">${s.type === "ranked" ? "Rangos" : "Normal"}</span>
                     <div class="uc-set-actions">
-                        <button class="uc-icon-btn" data-action="duplicate" data-id="${s.id}" title="Duplicar">👥</button>
-                        <button class="uc-icon-btn" data-action="export" data-id="${s.id}" title="Exportar Lua">⬇</button>
-                        <button class="uc-icon-btn" data-action="share" data-id="${s.id}" title="Compartir">🔗</button>
-                        <button class="uc-icon-btn text-red-400/60 hover:text-red-400" data-action="delete" data-id="${s.id}" title="Eliminar">✕</button>
+                        <button class="uc-icon-btn text-white/50 hover:text-white" data-action="menu" data-id="${s.id}" title="Opciones">⋮</button>
                     </div>
                 </li>`;
             });
@@ -655,10 +706,7 @@ import ToolLayout from "@layouts/ToolLayout.astro";
                 <span class="flex-1 truncate text-sm font-medium">${s.name || "Sin nombre"}</span>
                 <span class="text-[10px] px-1.5 py-0.5 rounded ${s.type === "ranked" ? "text-blue-400 bg-blue-400/10" : "text-amber-400 bg-amber-400/10"}">${s.type === "ranked" ? "Rangos" : "Normal"}</span>
                 <div class="uc-set-actions">
-                    <button class="uc-icon-btn" data-action="duplicate" data-id="${s.id}" title="Duplicar">👥</button>
-                    <button class="uc-icon-btn" data-action="export" data-id="${s.id}" title="Exportar Lua">⬇</button>
-                    <button class="uc-icon-btn" data-action="share" data-id="${s.id}" title="Compartir">🔗</button>
-                    <button class="uc-icon-btn text-red-400/60 hover:text-red-400" data-action="delete" data-id="${s.id}" title="Eliminar">✕</button>
+                    <button class="uc-icon-btn text-white/50 hover:text-white" data-action="menu" data-id="${s.id}" title="Opciones">⋮</button>
                 </div>
             </li>`;
         });
@@ -945,39 +993,10 @@ ${r.label ? r.label : "Rango " + r.number}
                     return;
                 }
 
-                if (action === "delete") {
-                    if (!confirm("¿Eliminar este conjunto?")) return;
-                    state.sets = state.sets.filter((s) => s.id !== id);
-                    if (state.id === id) {
-                        state.id = null;
-                        state.tab = "base";
-                    }
-                    saveSets();
-                    render();
-                    return;
-                }
-                if (action === "duplicate") {
-                    const s = state.sets.find((x) => x.id === id);
-                    if (s) {
-                        duplicateSet(s);
-                    }
-                    return;
-                }
-                if (action === "export") {
-                    const s = state.sets.find((x) => x.id === id);
-                    if (!s) return;
-                    const luaOutput = el<HTMLDivElement>("lua-output");
-                    if (luaOutput) luaOutput.textContent = exportLua(s);
-                    el<HTMLDialogElement>("modal-lua")?.showModal();
-                    return;
-                }
-                if (action === "share") {
-                    const s = state.sets.find((x) => x.id === id);
-                    if (!s) return;
-                    const url = `${location.origin}${location.pathname}?s=${encodeSet(s)}`;
-                    const shareUrl = el<HTMLInputElement>("share-url");
-                    if (shareUrl) shareUrl.value = url;
-                    el<HTMLDialogElement>("modal-share")?.showModal();
+                if (action === "menu") {
+                    e.stopPropagation();
+                    const rect = btn.getBoundingClientRect();
+                    showMenu(rect.left - 130, rect.bottom + 4, id!);
                     return;
                 }
                 return;
@@ -1193,6 +1212,64 @@ ${r.label ? r.label : "Rango " + r.number}
             render();
             el<HTMLDialogElement>("modal-import")?.close();
         });
+
+        // Context menu item clicks
+        el("uc-context-menu")?.addEventListener("click", (e) => {
+            const btn = (e.target as HTMLElement).closest("[data-menu-action]") as HTMLButtonElement | null;
+            if (!btn || !menuTargetId) return;
+            const action = btn.dataset.menuAction;
+            const id = menuTargetId;
+            hideMenu();
+
+            if (action === "duplicate") {
+                const s = state.sets.find((x) => x.id === id);
+                if (s) duplicateSet(s);
+            } else if (action === "export") {
+                const s = state.sets.find((x) => x.id === id);
+                if (!s) return;
+                const luaOutput = el<HTMLDivElement>("lua-output");
+                if (luaOutput) luaOutput.textContent = exportLua(s);
+                el<HTMLDialogElement>("modal-lua")?.showModal();
+            } else if (action === "share") {
+                const s = state.sets.find((x) => x.id === id);
+                if (!s) return;
+                const url = `${location.origin}${location.pathname}?s=${encodeSet(s)}`;
+                const shareUrl = el<HTMLInputElement>("share-url");
+                if (shareUrl) shareUrl.value = url;
+                el<HTMLDialogElement>("modal-share")?.showModal();
+            } else if (action === "delete") {
+                if (!confirm("¿Eliminar este conjunto?")) return;
+                state.sets = state.sets.filter((s) => s.id !== id);
+                if (state.id === id) {
+                    state.id = null;
+                    state.tab = "base";
+                }
+                saveSets();
+                render();
+            }
+        });
+
+        // Right-click contextmenu delegation on set list items
+        el("set-list")?.addEventListener("contextmenu", (e: MouseEvent) => {
+            const item = (e.target as HTMLElement).closest(".uc-set-item") as HTMLElement | null;
+            if (item) {
+                e.preventDefault();
+                const id = item.dataset.id;
+                if (id) {
+                    showMenu(e.clientX, e.clientY, id);
+                }
+            }
+        });
+
+        // Hide context menu on global click/resize/scroll
+        document.addEventListener("click", (e) => {
+            const target = e.target as HTMLElement;
+            if (!target.closest("#uc-context-menu") && !target.closest('[data-action="menu"]')) {
+                hideMenu();
+            }
+        });
+        window.addEventListener("resize", hideMenu);
+        window.addEventListener("scroll", hideMenu, true);
     }
 
     function tryImportFromUrl(urlStr: string) {
@@ -1386,6 +1463,21 @@ ${r.label ? r.label : "Rango " + r.number}
         }
         to {
             opacity: 1;
+        }
+    }
+
+    .uc-menu-item {
+        @apply flex w-full cursor-pointer items-center rounded-lg border-none bg-transparent px-3 py-1.5 text-left text-[11px] font-medium text-white/70 transition-all hover:bg-white/8 hover:text-white/90 active:scale-[0.98];
+    }
+
+    @keyframes menuShow {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
         }
     }
 </style>
