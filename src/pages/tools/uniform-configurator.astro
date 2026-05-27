@@ -430,12 +430,14 @@ import ToolLayout from "@layouts/ToolLayout.astro";
         id: string | null;
         tab: string;
         activeGender: "male" | "female";
+        collapsedFolders: Record<string, boolean>;
     } = {
         sets: [],
         folders: [],
         id: null,
         tab: "base",
         activeGender: "male",
+        collapsedFolders: {},
     };
 
     // ── Storage ──────────────────────────────────────────────────────────────────
@@ -725,16 +727,17 @@ import ToolLayout from "@layouts/ToolLayout.astro";
         // Render folders first
         state.folders.forEach((f) => {
             const fSets = state.sets.filter((s) => s.folderId === f.id);
+            const collapsed = !!state.collapsedFolders[f.id];
             html += `<li class="group/folder mb-2">
-                <div class="flex items-center justify-between px-2 py-1 text-xs font-bold text-white/60 bg-white/5 rounded">
-                    <span class="truncate pr-2">📁 ${f.name}</span>
+                <div class="flex items-center justify-between px-2 py-1 text-xs font-bold text-white/60 bg-white/5 rounded cursor-pointer hover:bg-white/10 select-none uc-folder-header" data-folder-header-id="${f.id}">
+                    <span class="truncate pr-2">${collapsed ? "📁" : "📂"} ${f.name}</span>
                     <div class="flex gap-1 shrink-0 opacity-0 pointer-events-none transition-opacity duration-150 group-hover/folder:opacity-100 group-hover/folder:pointer-events-auto">
                         <button class="uc-icon-btn text-[10px] !p-0.5" data-action="export-folder" data-id="${f.id}" title="Exportar carpeta LUA">⬇</button>
                         <button class="uc-icon-btn text-[10px] !p-0.5" data-action="share-folder" data-id="${f.id}" title="Compartir carpeta">🔗</button>
                         <button class="uc-icon-btn text-red-400/60 hover:text-red-400 text-[10px] !p-0.5" data-action="delete-folder" data-id="${f.id}" title="Eliminar carpeta">✕</button>
                     </div>
                 </div>
-                <ul class="pl-2 mt-1 list-none flex-col gap-0.5 flex">`;
+                <ul class="pl-2 mt-1 list-none flex-col gap-0.5 ${collapsed ? "hidden" : "flex"}">`;
 
             fSets.forEach((s) => {
                 const active = s.id === state.id;
@@ -1005,6 +1008,16 @@ ${r.label ? r.label : "Rango " + r.number} (${r.number})
 
         // Set list clicks (delegated)
         el("set-list")?.addEventListener("click", (e: Event) => {
+            const folderHeader = (e.target as HTMLElement).closest(".uc-folder-header") as HTMLElement | null;
+            if (folderHeader && !(e.target as HTMLElement).closest("[data-action]")) {
+                const folderId = folderHeader.dataset.folderHeaderId;
+                if (folderId) {
+                    state.collapsedFolders[folderId] = !state.collapsedFolders[folderId];
+                    renderSetList();
+                }
+                return;
+            }
+
             const btn = (e.target as HTMLElement).closest(
                 "[data-action]",
             ) as HTMLButtonElement | null;
