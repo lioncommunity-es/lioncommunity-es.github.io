@@ -572,6 +572,40 @@ import ToolLayout from "@layouts/ToolLayout.astro";
         return `{\n    bulletproof = ${bp},\n    label = "${label}",\n    base = {\n        male = ${bm},\n        female = ${bf}\n    },\n    ranks = {${ranksLua}\n    }\n},`;
     }
 
+    function exportFolderLua(folderId: string): string {
+        const folder = state.folders.find((f) => f.id === folderId);
+        if (!folder) return "";
+        const fSets = state.sets.filter((s) => s.folderId === folderId);
+        
+        const rankedSets = fSets.filter((s) => s.type === "ranked");
+        const normalSets = fSets.filter((s) => s.type === "normal");
+        
+        const indentString = (str: string, spaces: number) => {
+            const pad = " ".repeat(spaces);
+            return str.split("\n").map((line) => line ? pad + line : "").join("\n");
+        };
+
+        let ranksLuaList = "";
+        rankedSets.forEach((s) => {
+            const single = exportLua(s);
+            ranksLuaList += indentString(single, 4) + "\n";
+        });
+        if (ranksLuaList) {
+            ranksLuaList = "\n" + ranksLuaList + "    ";
+        }
+
+        let normalLuaList = "";
+        normalSets.forEach((s) => {
+            const single = exportLua(s);
+            normalLuaList += indentString(single, 4) + "\n";
+        });
+        if (normalLuaList) {
+            normalLuaList = "\n" + normalLuaList + "    ";
+        }
+
+        return `{\n    ranksUniforms = {${ranksLuaList}},\n    generalUniforms = {${normalLuaList}}\n}`;
+    }
+
     function duplicateSet(set: SetData) {
         const duplicated: SetData = JSON.parse(JSON.stringify(set));
         duplicated.id = uid();
@@ -672,7 +706,8 @@ import ToolLayout from "@layouts/ToolLayout.astro";
             html += `<li class="group/folder mb-2">
                 <div class="flex items-center justify-between px-2 py-1 text-xs font-bold text-white/60 bg-white/5 rounded">
                     <span class="truncate pr-2">📁 ${f.name}</span>
-                    <div class="hidden group-hover/folder:flex gap-1 shrink-0">
+                    <div class="flex gap-1 shrink-0 opacity-0 pointer-events-none transition-opacity duration-150 group-hover/folder:opacity-100 group-hover/folder:pointer-events-auto">
+                        <button class="uc-icon-btn text-[10px] !p-0.5" data-action="export-folder" data-id="${f.id}" title="Exportar carpeta LUA">⬇</button>
                         <button class="uc-icon-btn text-[10px] !p-0.5" data-action="share-folder" data-id="${f.id}" title="Compartir carpeta">🔗</button>
                         <button class="uc-icon-btn text-red-400/60 hover:text-red-400 text-[10px] !p-0.5" data-action="delete-folder" data-id="${f.id}" title="Eliminar carpeta">✕</button>
                     </div>
@@ -955,6 +990,13 @@ ${r.label ? r.label : "Rango " + r.number} (${r.number})
             ) as HTMLButtonElement | null;
             if (btn) {
                 const { action, id } = btn.dataset;
+
+                if (action === "export-folder") {
+                    const luaOutput = el<HTMLDivElement>("lua-output");
+                    if (luaOutput) luaOutput.textContent = exportFolderLua(id!);
+                    el<HTMLDialogElement>("modal-lua")?.showModal();
+                    return;
+                }
 
                 if (action === "share-folder") {
                     const folder = state.folders.find((f) => f.id === id);
@@ -1423,10 +1465,10 @@ ${r.label ? r.label : "Rango " + r.number} (${r.number})
         @apply border-white/10 bg-white/5;
     }
     .uc-set-actions {
-        @apply hidden items-center gap-0.5 group-hover:flex;
+        @apply flex items-center gap-0.5 opacity-0 pointer-events-none transition-opacity duration-150 group-hover:opacity-100 group-hover:pointer-events-auto;
     }
     .uc-set-item.active .uc-set-actions {
-        @apply flex;
+        @apply opacity-100 pointer-events-auto;
     }
 
     /* Table */
