@@ -513,12 +513,33 @@ import ToolLayout from "@layouts/ToolLayout.astro";
                 return { val: null, hasValue: false };
             }
             const cell = cells[i].trim();
-            const match = cell.match(/^([+-]?\d+)(?:-([+-]?\d+))?$/);
-            if (!match) {
+            // A cell must contain at least one digit to be considered a number
+            if (!cell || !/\d/.test(cell)) {
                 return { val: null, hasValue: true };
             }
-            const model = parseInt(match[1], 10);
-            const texture = match[2] ? parseInt(match[2], 10) : 0;
+            
+            let model = 0;
+            let texture = 0;
+            
+            // Search for '-' starting from index 1 since model can be negative (starts with '-')
+            const sepIndex = cell.indexOf("-", 1);
+            if (sepIndex !== -1) {
+                const part1 = cell.slice(0, sepIndex).trim();
+                const part2 = cell.slice(sepIndex + 1).trim();
+                model = parseInt(part1, 10);
+                texture = parseInt(part2, 10);
+            } else {
+                model = parseInt(cell, 10);
+                texture = 0;
+            }
+            
+            if (isNaN(model)) {
+                return { val: null, hasValue: true };
+            }
+            if (isNaN(texture)) {
+                texture = 0;
+            }
+            
             return {
                 val: { model, texture },
                 hasValue: true,
