@@ -588,7 +588,7 @@ import ToolLayout from "@layouts/ToolLayout.astro";
         let ranksLuaList = "";
         rankedSets.forEach((s) => {
             const single = exportLua(s);
-            ranksLuaList += indentString(single, 4) + "\n";
+            ranksLuaList += indentString(single, 8) + "\n";
         });
         if (ranksLuaList) {
             ranksLuaList = "\n" + ranksLuaList + "    ";
@@ -597,7 +597,7 @@ import ToolLayout from "@layouts/ToolLayout.astro";
         let normalLuaList = "";
         normalSets.forEach((s) => {
             const single = exportLua(s);
-            normalLuaList += indentString(single, 4) + "\n";
+            normalLuaList += indentString(single, 8) + "\n";
         });
         if (normalLuaList) {
             normalLuaList = "\n" + normalLuaList + "    ";
