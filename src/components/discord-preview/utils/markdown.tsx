@@ -148,9 +148,9 @@ export function parseMarkdown(text: string): React.ReactNode[] {
       const pushNestedList = () => {
         if (currentNestedList.length > 0) {
           rootListItems.push(
-            <DiscordUnorderedList key={`nested-${i}-${rootListItems.length}`} style={{ marginTop: 0, marginBottom: 0, marginLeft: "1rem" }}>
+            <ul key={`nested-${i}-${rootListItems.length}`} className="ml-6 mt-0.5 list-[circle] space-y-0.5">
               {currentNestedList}
-            </DiscordUnorderedList>
+            </ul>
           );
           currentNestedList = [];
         }
@@ -167,9 +167,9 @@ export function parseMarkdown(text: string): React.ReactNode[] {
         const indentSize = indentMatch ? indentMatch[0].length : 0;
         
         const item = (
-          <DiscordListItem key={`li-${i}`}>
+          <li key={`li-${i}`}>
             {parseInline(trimmed.slice(2))}
-          </DiscordListItem>
+          </li>
         );
 
         if (indentSize > 0) {
@@ -183,34 +183,34 @@ export function parseMarkdown(text: string): React.ReactNode[] {
       pushNestedList();
       i--;
       parts.push(
-        <DiscordUnorderedList key={`ul-${i}`} style={{ marginTop: "4px", marginBottom: "4px" }}>
+        <ul key={`ul-${i}`} className="ml-4 mt-1 mb-2 list-disc space-y-0.5">
           {rootListItems}
-        </DiscordUnorderedList>,
+        </ul>,
       );
       continue;
     }
 
     if (line.startsWith("### ")) {
       parts.push(
-        <DiscordHeader key={`h3-${i}`} level={3} style={{ marginTop: "12px", marginBottom: "4px" }}>
+        <h3 key={`h3-${i}`} className="mt-3 mb-1 text-[1rem] font-bold text-white">
           {parseInline(line.slice(4))}
-        </DiscordHeader>,
+        </h3>,
       );
       continue;
     }
     if (line.startsWith("## ")) {
       parts.push(
-        <DiscordHeader key={`h2-${i}`} level={2} style={{ marginTop: "12px", marginBottom: "4px" }}>
+        <h2 key={`h2-${i}`} className="mt-4 mb-1 text-[1.15rem] font-bold text-white">
           {parseInline(line.slice(3))}
-        </DiscordHeader>,
+        </h2>,
       );
       continue;
     }
     if (line.startsWith("# ")) {
       parts.push(
-        <DiscordHeader key={`h1-${i}`} level={1} style={{ marginTop: "16px", marginBottom: "4px" }}>
+        <h1 key={`h1-${i}`} className="mt-5 mb-1 text-[1.5rem] font-bold text-white">
           {parseInline(line.slice(2))}
-        </DiscordHeader>,
+        </h1>,
       );
       continue;
     }
