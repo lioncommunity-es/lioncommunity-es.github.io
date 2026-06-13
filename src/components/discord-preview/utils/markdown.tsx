@@ -152,18 +152,13 @@ export function parseMarkdown(text: string): React.ReactNode[] {
         
         const indentMatch = ln.match(/^\s*/);
         const indentSize = indentMatch ? indentMatch[0].length : 0;
-        const item = (
-          <DiscordListItem key={`li-${i}`}>
+        listItems.push(
+          <DiscordListItem 
+            key={`li-${i}`} 
+            style={indentSize > 0 ? { marginLeft: `${indentSize * 0.5}rem` } : undefined}
+          >
             {parseInline(trimmed.slice(2))}
           </DiscordListItem>
-        );
-        
-        listItems.push(
-          indentSize > 0 ? (
-            <div key={`li-wrap-${i}`} style={{ paddingLeft: `${indentSize * 0.5}rem` }}>
-              {item}
-            </div>
-          ) : item
         );
         i++;
       }
