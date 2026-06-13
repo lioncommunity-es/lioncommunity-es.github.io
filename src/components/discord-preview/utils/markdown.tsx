@@ -142,7 +142,20 @@ export function parseMarkdown(text: string): React.ReactNode[] {
 
     const trimmedLine = line.trimStart();
     if (trimmedLine.startsWith("- ") || trimmedLine.startsWith("* ")) {
-      const listItems: React.ReactNode[] = [];
+      const rootListItems: React.ReactNode[] = [];
+      let currentNestedList: React.ReactNode[] = [];
+
+      const pushNestedList = () => {
+        if (currentNestedList.length > 0) {
+          rootListItems.push(
+            <DiscordUnorderedList key={`nested-${i}-${rootListItems.length}`} style={{ marginTop: 0, marginBottom: 0, marginLeft: "1rem" }}>
+              {currentNestedList}
+            </DiscordUnorderedList>
+          );
+          currentNestedList = [];
+        }
+      };
+
       while (i < lines.length) {
         const ln = lines[i];
         const trimmed = ln.trimStart();
@@ -152,20 +165,26 @@ export function parseMarkdown(text: string): React.ReactNode[] {
         
         const indentMatch = ln.match(/^\s*/);
         const indentSize = indentMatch ? indentMatch[0].length : 0;
-        listItems.push(
-          <DiscordListItem 
-            key={`li-${i}`} 
-            style={indentSize > 0 ? { marginLeft: `${indentSize * 0.5}rem` } : undefined}
-          >
+        
+        const item = (
+          <DiscordListItem key={`li-${i}`}>
             {parseInline(trimmed.slice(2))}
           </DiscordListItem>
         );
+
+        if (indentSize > 0) {
+          currentNestedList.push(item);
+        } else {
+          pushNestedList();
+          rootListItems.push(item);
+        }
         i++;
       }
+      pushNestedList();
       i--;
       parts.push(
         <DiscordUnorderedList key={`ul-${i}`} style={{ marginTop: "4px", marginBottom: "4px" }}>
-          {listItems}
+          {rootListItems}
         </DiscordUnorderedList>,
       );
       continue;
