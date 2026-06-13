@@ -447,23 +447,46 @@ function SectionEditor({
           />
         </div>
         {data.accessory.kind === "thumbnail" && (
-          <Input
-            value={data.accessory.url}
-            onChange={(v) =>
-              onChange({
-                ...data,
-                accessory: {
-                  kind: "thumbnail",
-                  url: v,
-                  description:
-                    data.accessory.kind === "thumbnail"
-                      ? data.accessory.description
-                      : undefined,
-                },
-              })
-            }
-            placeholder="URL del thumbnail"
-          />
+          <div className="space-y-2">
+            <Input
+              value={data.accessory.url}
+              onChange={(v) =>
+                onChange({
+                  ...data,
+                  accessory: {
+                    kind: "thumbnail",
+                    url: v,
+                    description:
+                      data.accessory.kind === "thumbnail"
+                        ? data.accessory.description
+                        : undefined,
+                  },
+                })
+              }
+              placeholder="URL del thumbnail"
+            />
+            <Input
+              value={
+                data.accessory.kind === "thumbnail"
+                  ? data.accessory.description || ""
+                  : ""
+              }
+              onChange={(v) =>
+                onChange({
+                  ...data,
+                  accessory: {
+                    kind: "thumbnail",
+                    url:
+                      data.accessory.kind === "thumbnail"
+                        ? data.accessory.url
+                        : "",
+                    description: v,
+                  },
+                })
+              }
+              placeholder="Texto alternativo (Description)"
+            />
+          </div>
         )}
         {data.accessory.kind === "button_accessory" && (
           <div className="space-y-2 rounded bg-black/20 p-2">

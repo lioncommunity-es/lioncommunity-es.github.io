@@ -113,14 +113,15 @@ export function parseMarkdown(text: string): React.ReactNode[] {
 
   const isBlockLine = (ln: string) => {
     if (!ln) return false;
-    if (ln.startsWith("\\#") || ln.startsWith("\\-") || ln.startsWith("\\*"))
+    const trimmed = ln.trimStart();
+    if (trimmed.startsWith("\\#") || trimmed.startsWith("\\-") || trimmed.startsWith("\\*"))
       return false;
     return (
-      ln.startsWith("# ") ||
-      ln.startsWith("## ") ||
-      ln.startsWith("### ") ||
-      ln.startsWith("- ") ||
-      ln.startsWith("* ")
+      trimmed.startsWith("# ") ||
+      trimmed.startsWith("## ") ||
+      trimmed.startsWith("### ") ||
+      trimmed.startsWith("- ") ||
+      trimmed.startsWith("* ")
     );
   };
 
@@ -139,16 +140,30 @@ export function parseMarkdown(text: string): React.ReactNode[] {
       continue;
     }
 
-    if (line.startsWith("- ") || line.startsWith("* ")) {
+    const trimmedLine = line.trimStart();
+    if (trimmedLine.startsWith("- ") || trimmedLine.startsWith("* ")) {
       const listItems: React.ReactNode[] = [];
-      while (
-        i < lines.length &&
-        (lines[i].startsWith("- ") || lines[i].startsWith("* "))
-      ) {
-        listItems.push(
+      while (i < lines.length) {
+        const ln = lines[i];
+        const trimmed = ln.trimStart();
+        if (!trimmed.startsWith("- ") && !trimmed.startsWith("* ")) {
+          break;
+        }
+        
+        const indentMatch = ln.match(/^\s*/);
+        const indentSize = indentMatch ? indentMatch[0].length : 0;
+        const item = (
           <DiscordListItem key={`li-${i}`}>
-            {parseInline(lines[i].slice(2))}
-          </DiscordListItem>,
+            {parseInline(trimmed.slice(2))}
+          </DiscordListItem>
+        );
+        
+        listItems.push(
+          indentSize > 0 ? (
+            <div key={`li-wrap-${i}`} style={{ paddingLeft: `${indentSize * 0.5}rem` }}>
+              {item}
+            </div>
+          ) : item
         );
         i++;
       }
