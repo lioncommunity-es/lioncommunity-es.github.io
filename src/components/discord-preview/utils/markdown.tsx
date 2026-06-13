@@ -164,7 +164,7 @@ export function parseMarkdown(text: string): React.ReactNode[] {
       }
       i--;
       parts.push(
-        <DiscordUnorderedList key={`ul-${i}`}>
+        <DiscordUnorderedList key={`ul-${i}`} style={{ marginTop: "4px", marginBottom: "4px" }}>
           {listItems}
         </DiscordUnorderedList>,
       );
@@ -173,7 +173,7 @@ export function parseMarkdown(text: string): React.ReactNode[] {
 
     if (line.startsWith("### ")) {
       parts.push(
-        <DiscordHeader key={`h3-${i}`} level={3}>
+        <DiscordHeader key={`h3-${i}`} level={3} style={{ marginTop: "12px", marginBottom: "4px" }}>
           {parseInline(line.slice(4))}
         </DiscordHeader>,
       );
@@ -181,7 +181,7 @@ export function parseMarkdown(text: string): React.ReactNode[] {
     }
     if (line.startsWith("## ")) {
       parts.push(
-        <DiscordHeader key={`h2-${i}`} level={2}>
+        <DiscordHeader key={`h2-${i}`} level={2} style={{ marginTop: "12px", marginBottom: "4px" }}>
           {parseInline(line.slice(3))}
         </DiscordHeader>,
       );
@@ -189,7 +189,7 @@ export function parseMarkdown(text: string): React.ReactNode[] {
     }
     if (line.startsWith("# ")) {
       parts.push(
-        <DiscordHeader key={`h1-${i}`} level={1}>
+        <DiscordHeader key={`h1-${i}`} level={1} style={{ marginTop: "16px", marginBottom: "4px" }}>
           {parseInline(line.slice(2))}
         </DiscordHeader>,
       );
